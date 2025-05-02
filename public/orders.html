@@ -246,10 +246,95 @@
         .logout-button:hover {
             background-color: #d32f2f;
         }
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .login-button:hover {
+            background-color: #45a049;
+        }
+        
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <button class="logout-button" id="logoutButton">Logout</button>
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-form">
+            <h2>تسجيل الدخول</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">اسم المستخدم:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">كلمة المرور:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-button">دخول</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <button class="logout-button" id="logoutButton">تسجيل الخروج</button>
     <!-- Notification Badge -->
     <div id="notificationBadge" class="notification-badge hidden">
         <i class="fas fa-bell"></i>
@@ -1330,19 +1415,52 @@
             }, 30000);
         });
 
-        // Check authentication on page load
+        // Authentication functions
         async function checkAuth() {
             try {
                 const response = await fetch('/api/check-auth');
                 const data = await response.json();
                 
-                if (!data.authenticated) {
-                    window.location.href = '/orders-login.html';
+                if (data.authenticated) {
+                    document.getElementById('loginOverlay').style.display = 'none';
+                } else {
+                    document.getElementById('loginOverlay').style.display = 'flex';
                 }
             } catch (error) {
-                window.location.href = '/orders-login.html';
+                document.getElementById('loginOverlay').style.display = 'flex';
             }
         }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('loginOverlay').style.display = 'none';
+                } else {
+                    errorMessage.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'حدث خطأ. يرجى المحاولة مرة أخرى.';
+                errorMessage.style.display = 'block';
+            }
+        });
 
         // Handle logout
         document.getElementById('logoutButton').addEventListener('click', async () => {
@@ -1350,14 +1468,17 @@
                 await fetch('/api/logout', {
                     method: 'POST'
                 });
-                window.location.href = '/orders-login.html';
+                document.getElementById('loginOverlay').style.display = 'flex';
             } catch (error) {
                 console.error('Logout failed:', error);
             }
         });
 
         // Check authentication when page loads
-        checkAuth();
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            // ... rest of your existing initialization code ...
+        });
     </script>
 </body>
 </html> 
