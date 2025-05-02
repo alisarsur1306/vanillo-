@@ -1,0 +1,38 @@
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.status-pending {
+  background-image: url('images/pending.svg');
+}
+
+.status-preparing {
+  background-image: url('images/preparing.svg');
+}
+
+.status-ready {
+  background-image: url('images/ready.svg');
+}
+
+.status-delivered {
+  background-image: url('images/delivered.svg');
+}
+
+/* Animation for status changes */
+.status-icon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.status-icon:hover {
+  transform: scale(1.1);
+} 

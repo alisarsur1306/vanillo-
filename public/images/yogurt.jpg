@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="200" viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="200" fill="#F3F4F6"/>
+  <path d="M140 80H160C171.046 80 180 88.9543 180 100V120C180 131.046 171.046 140 160 140H140C128.954 140 120 131.046 120 120V100C120 88.9543 128.954 80 140 80Z" stroke="#9CA3AF" stroke-width="2"/>
+  <path d="M135 110L145 120L165 100" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="150" y="170" text-anchor="middle" font-family="Arial" font-size="14" fill="#6B7280">صورة قريباً</text>
+</svg> 

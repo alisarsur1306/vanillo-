@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .category {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+        }
+        .category-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #e74c3c;
+        }
+        .item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .item-name {
+            font-weight: bold;
+        }
+        .item-price {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Menu Display</h1>
+    <div id="menu-container"></div>
+
+    <script>
+        async function fetchMenu() {
+            try {
+                const response = await fetch('/api/menu');
+                const menuData = await response.json();
+                console.log('Fetched menu data:', menuData);
+                displayMenu(menuData);
+            } catch (error) {
+                console.error('Error loading menu:', error);
+                document.getElementById('menu-container').innerHTML = 
+                    '<div style="color: red;">Error loading menu data</div>';
+            }
+        }
+
+        function displayMenu(menuData) {
+            const container = document.getElementById('menu-container');
+            let html = '';
+
+            // Check if menuData has the expected structure
+            if (!menuData.categories || !menuData.items) {
+                console.error('Invalid menu data structure:', menuData);
+                container.innerHTML = '<div style="color: red;">Invalid menu data structure</div>';
+                return;
+            }
+
+            // Create category sections
+            menuData.categories.forEach(category => {
+                html += `
+                    <div class="category">
+                        <h2 class="category-title">${category.name}</h2>
+                `;
+                
+                // Find items for this category
+                const categoryItems = menuData.items.filter(item => item.categoryId === category.id);
+                console.log(`Found ${categoryItems.length} items for category ${category.name}`);
+                
+                if (categoryItems.length > 0) {
+                    categoryItems.forEach(item => {
+                        html += `
+                            <div class="item">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-price">${item.price} ${item.currency || 'ريال'}</div>
+                                <div>${item.description || ''}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `<div>No items in this category</div>`;
+                }
+                
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Load menu when page loads
+        document.addEventListener('DOMContentLoaded', fetchMenu);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,2794 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فانيلو كفرقاسم - Vanillo Ice Cream</title>
+    <link href="styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        // Initialize Google Maps API with better error handling
+        (function loadGoogleMapsAPI() {
+            // Define the configuration object 'g' that was missing
+            const g = {
+                key: "AIzaSyC6i3cRs2gyjuyO-zFzDBp2N1-h6kKcwfs",
+                v: "weekly",
+                libraries: ["places", "marker", "geocoding"],
+                map_ids: ["vanillo_map"]
+            };
+            
+            var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+            b = b[c] || (b[c] = {});
+            var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
+                try {
+                    await (a = m.createElement("script"));
+                    e.set("libraries", [...r] + "");
+                    for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+                    e.set("callback", c + ".maps." + q);
+                    a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+                    d[q] = f;
+                    a.onerror = () => {
+                        console.error(p + " could not load.");
+                        h = n(Error(p + " could not load."));
+                        // Show error message to user
+                        const mapDiv = document.getElementById('map');
+                        const loadingDiv = document.querySelector('.map-loading');
+                        const errorDiv = document.querySelector('.map-error');
+                        
+                        if (mapDiv) mapDiv.style.display = 'none';
+                        if (loadingDiv) loadingDiv.classList.add('hidden');
+                        if (errorDiv) {
+                            errorDiv.classList.remove('hidden');
+                            errorDiv.innerHTML = `
+                                <div class="text-center">
+                                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                    <p>حدث خطأ في تحميل الخريطة</p>
+                                    <p class="text-sm">الرجاء تحديث الصفحة</p>
+                                    <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg">
+                                        تحديث الصفحة
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    };
+                    a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+                    m.head.append(a);
+                } catch (error) {
+                    console.error("Error loading Google Maps API:", error);
+                    h = n(error);
+                }
+            }));
+            d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+        })();
+    </script>
+    <script>
+        // Initialize tailwind configuration
+        window.tailwind = {
+            config: {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C4DFF',
+                        secondary: '#FF80AB',
+                        accent: '#B388FF',
+                        'primary-light': '#E8E0FF',
+                        'primary-dark': '#5C35CC'
+                    }
+                }
+            }
+        }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #fafafa;
+        }
+        .hero-pattern {
+            background-color: #000000;
+            position: relative;
+        }
+        .hero-pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3));
+            z-index: 1;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .logo-container {
+            width: 280px;
+            height: 137px;
+            margin: 0 auto;
+            position: relative;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+        }
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .menu-item {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(124, 77, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            width: 100%;
+            height: 450px; /* Fixed height for all cards */
+        }
+        .menu-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .menu-item .image-container {
+            position: relative;
+            width: 100%;
+            height: 250px; /* Fixed height for image container */
+            overflow: hidden;
+        }
+        .menu-item .image-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .menu-item .content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 200px; /* Fixed height for content */
+        }
+        .menu-item h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .menu-item .price {
+            font-weight: 700;
+            color: #7C4DFF;
+            margin-bottom: 0.5rem;
+        }
+        .menu-item .description {
+            color: #6B7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            flex: 1;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .menu-item button {
+            width: 100%;
+            padding: 0.75rem;
+            background: black;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .menu-item button:hover {
+            background: #1a1a1a;
+        }
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #000000;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .cart-btn {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: black;
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 50;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cart-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+        #orderModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            backdrop-filter: blur(4px);
+            overflow-y: auto;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            max-width: 600px;
+            margin: 1rem auto;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        @media (max-width: 640px) {
+            .modal-content {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+                max-height: 100vh;
+            }
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        .cart-item:hover {
+            background-color: #f9f9f9;
+        }
+        .cart-item-details {
+            flex: 1;
+        }
+        .cart-item-quantity {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .quantity-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quantity-btn:hover {
+            background: #e0e0e0;
+        }
+        .quantity-btn.minus {
+            color: #ef4444;
+        }
+        .quantity-btn.plus {
+            color: #10b981;
+        }
+        .quantity-display {
+            font-weight: bold;
+            min-width: 24px;
+            text-align: center;
+        }
+        .cart-item-price {
+            font-weight: bold;
+            color: #7C4DFF;
+            min-width: 80px;
+            text-align: left;
+        }
+        .cart-item-remove {
+            color: #ef4444;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .cart-item-remove:hover {
+            background-color: #fee2e2;
+        }
+        .cart-summary {
+            background-color: #f9f9f9;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            display: block !important; /* Force display on all devices */
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #7C4DFF;
+            box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.1);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: #7C4DFF;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            margin-top: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: #6B3FE7;
+        }
+
+        @media (max-width: 640px) {
+            .submit-btn {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                margin: 0;
+                padding: 1.2rem;
+                font-size: 1.2rem;
+                border-radius: 0;
+                box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            }
+            
+            .modal-content {
+                padding-bottom: 80px; /* Add space for the fixed button */
+            }
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        .empty-cart i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+        @media (max-width: 640px) {
+            .modal-content {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            .cart-item {
+                flex-wrap: wrap;
+            }
+            .cart-item-price {
+                margin-top: 0.5rem;
+                text-align: right;
+            }
+            .cart-item-remove {
+                margin-right: auto;
+                margin-top: 0.5rem;
+            }
+        }
+        #map {
+            width: 100%;
+            height: 400px;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            background-color: #f3f4f6;
+        }
+        .map-container {
+            position: relative;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .map-tooltip {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .map-tooltip.visible {
+            opacity: 1;
+        }
+        .map-container:hover .map-tooltip {
+            opacity: 1;
+        }
+        .marker-pulse {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .map-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+        }
+        .map-error {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fee2e2;
+            border-radius: 0.5rem;
+            color: #ef4444;
+        }
+        @keyframes statusUpdate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-update-animation {
+            animation: statusUpdate 0.5s ease-in-out;
+        }
+        .prepTimeContainer {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+        .circular-progress {
+            transform: rotate(-90deg);
+        }
+        .circular-progress circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        .circular-progress .bg {
+            stroke: #e5e7eb;
+        }
+        .circular-progress .progress {
+            stroke: #7C4DFF;
+        }
+        .countdown-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4b5563;
+        }
+        /* Add styles for the fallback map */
+        .fallback-map {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .map-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            z-index: 10;
+        }
+        .map-error {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fee2e2;
+            border-radius: 0.5rem;
+            color: #ef4444;
+            z-index: 10;
+        }
+        /* Update floating tracking button styles */
+        .tracking-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 50;
+            width: 56px;
+            height: 56px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            animation: slideIn 0.3s ease-out;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .tracking-btn:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+        }
+
+        .tracking-btn:active {
+            transform: scale(0.95);
+        }
+
+        .tracking-btn i {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .tracking-btn .order-number {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #000000;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tracking-btn .pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            70% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tracking-btn {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 48px;
+                height: 48px;
+            }
+
+            .tracking-btn i {
+                font-size: 1.25rem;
+            }
+
+            .tracking-btn .order-number {
+                font-size: 0.7rem;
+                min-width: 20px;
+                height: 20px;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+        /* Category Navigation Styles */
+        .category-nav {
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 0.5rem;
+            max-width: 100%;
+            position: relative;
+            background: linear-gradient(to right, rgba(0,0,0,0.03) 0%, transparent 10%, transparent 90%, rgba(0,0,0,0.03) 100%);
+            border-radius: 0.5rem;
+            box-shadow: inset 0 0 3px rgba(0,0,0,0.03);
+        }
+        
+        @media (max-width: 640px) {
+            .category-nav {
+                display: none;
+            }
+            
+            .scroll-dots {
+                display: none;
+            }
+        }
+        
+        .category-nav::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category-nav .flex {
+            display: inline-flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            min-width: min-content;
+            position: relative;
+        }
+        
+        .category-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            background-color: #111111;
+            color: #ffffff;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            border: 1px solid #333333;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .category-btn:hover {
+            background-color: #1a1a1a;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        
+        .category-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .category-btn.active {
+            background-color: #ffd700;
+            color: #000000;
+            border-color: #ffd700;
+            box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.3);
+        }
+        
+        .category-btn.active:hover {
+            background-color: #ffed4a;
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.4);
+        }
+        
+        /* Redesigned scroll indicators */
+        .scroll-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .scroll-indicator.left {
+            left: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+        
+        .scroll-indicator.right {
+            right: 0;
+            background: linear-gradient(to left, rgba(0,0,0,0.05), transparent);
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .scroll-indicator::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 1px;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scroll-indicator.left::after {
+            transform: rotate(-135deg);
+            margin-left: 5px;
+        }
+        
+        .scroll-indicator.right::after {
+            transform: rotate(45deg);
+            margin-right: 5px;
+        }
+        
+        .category-nav:hover .scroll-indicator {
+            opacity: 0.7;
+        }
+        
+        /* Scroll dots indicator */
+        .scroll-dots {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 8px;
+            opacity: 0.5;
+        }
+        
+        .scroll-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #333;
+            transition: all 0.2s ease;
+        }
+        
+        .scroll-dot.active {
+            width: 12px;
+            border-radius: 2px;
+            background-color: #ffd700;
+        }
+        
+        @media (max-width: 640px) {
+            .category-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+            
+            .scroll-indicator {
+                width: 20px;
+            }
+            
+            .scroll-dot {
+                width: 3px;
+                width: 5px;
+                height: 5px;
+            }
+            
+            .scroll-dot.active {
+                width: 15px;
+            }
+        }
+
+        /* Update main container width */
+        .max-w-7xl {
+            max-width: 100%;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .max-w-7xl {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .max-w-7xl {
+                max-width: 1280px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        /* Grid Layout */
+        #menuItems {
+            display: block;
+            padding: 1rem;
+        }
+
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* Desktop styles */
+        @media (min-width: 641px) {
+            .menu-items-row {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+
+            .menu-item {
+                height: 100%;
+            }
+        }
+
+        /* Mobile styles */
+        @media (max-width: 640px) {
+            .menu-items-row {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                gap: 0.75rem;
+                padding: 0.5rem;
+                width: 100%;
+            }
+
+            .menu-item {
+                flex: 0 0 300px;
+                scroll-snap-align: start;
+                min-width: 300px;
+            }
+        }
+
+        /* Add styles for the page title */
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #111111;
+            text-align: center;
+            position: relative;
+            padding-bottom: 0.75rem;
+        }
+        
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(to right, #ffd700, #ffed4a);
+            border-radius: 3px;
+        }
+        
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111111;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #111111;
+            text-align: center;
+        }
+        
+        @media (max-width: 640px) {
+            .page-title {
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .category-title {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .section-title {
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Category Section Styles */
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .category-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111111;
+            text-align: right;
+            padding-right: 0.5rem;
+            border-right: 3px solid #7C4DFF;
+        }
+
+        @media (max-width: 640px) {
+            .category-section {
+                margin-bottom: 3rem;
+            }
+
+            .category-section-title {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+
+            #menuItems {
+                display: block;
+            }
+
+            .category-section .menu-items-row {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                gap: 0.75rem;
+                padding: 0.5rem;
+                width: 100%;
+            }
+
+            .category-section .menu-items-row::-webkit-scrollbar {
+                display: none;
+            }
+
+            .category-section .menu-item {
+                flex: 0 0 calc(50% - 0.375rem);
+                scroll-snap-align: start;
+                min-width: calc(50% - 0.375rem);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Update cart button HTML -->
+    <button class="cart-btn" id="cartBtn" title="عرض السلة" onclick="openOrderModal()">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <!-- Order Modal -->
+    <div id="orderModal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">سلة المشتريات</h2>
+                <button class="text-gray-500 hover:text-gray-700" onclick="closeOrderModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="cartItems" class="mb-6">
+                <!-- Cart items will be loaded here -->
+            </div>
+            
+            <div id="emptyCartMessage" class="empty-cart hidden">
+                <i class="fas fa-shopping-cart"></i>
+                <p class="text-xl mb-2">السلة فارغة</p>
+                <p>لم تقم بإضافة أي منتجات إلى السلة بعد</p>
+            </div>
+            
+            <div id="cartSummary" class="cart-summary">
+                <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
+                    <span class="font-bold text-xl">المجموع:</span>
+                    <span class="font-bold text-xl text-primary" id="cartTotalWithTax">0 ₪</span>
+                </div>
+            </div>
+            
+            <form id="orderForm" class="space-y-4 mt-6" novalidate>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label" for="customerName">الاسم</label>
+                        <input type="text" 
+                               id="customerName" 
+                               class="form-input" 
+                               placeholder="أدخل اسمك" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="customerPhone">رقم الهاتف</label>
+                        <input type="tel" 
+                               id="customerPhone" 
+                               class="form-input" 
+                               placeholder="050-0000000" 
+                               pattern="^05\d{8}$"
+                               maxlength="10"
+                               oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                               onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                               required>
+                        <small class="text-gray-500 mt-1 block">يجب أن يبدأ الرقم بـ 05 ويتكون من 10 أرقام</small>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label" for="deliveryType">نوع التوصيل</label>
+                        <select id="deliveryType" class="form-input" onchange="toggleDeliveryFields(this.value)" required>
+                            <option value="take_away">استلام</option>
+                            <option value="delivery">توصيل</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="deliveryAddressFields">
+                    <div class="form-group">
+                        <label class="form-label" for="customerAddress">العنوان</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="customerAddress" 
+                                   class="form-input" 
+                                   placeholder="أدخل عنوان التوصيل">
+                            <button type="button" 
+                                    id="detectLocation" 
+                                    class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-primary text-white p-2 rounded-full hover:bg-primary-dark transition-colors">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                        <div class="map-container">
+                            <div id="map"></div>
+                            <!-- Fallback map that will be shown if the Google Maps API fails to load -->
+                            <iframe id="fallback-map" class="fallback-map hidden" 
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3386.726755686!2d34.9505!3d32.1147!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151d0f5e9bf6d96d%3A0x7c4dfff!2sKfar%20Qassem%2C%20Israel!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus" 
+                                    allowfullscreen="" 
+                                    loading="lazy">
+                            </iframe>
+                            <div class="map-tooltip">
+                                <i class="fas fa-info-circle ml-1"></i>
+                                انقر على الخريطة لتحديد موقعك
+                            </div>
+                            <div class="map-loading hidden">
+                                <div class="text-center">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>جاري تحميل الخريطة...</p>
+                                </div>
+                            </div>
+                            <div class="map-error hidden">
+                                <div class="text-center">
+                                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                    <p>حدث خطأ في تحميل الخريطة</p>
+                                    <p class="text-sm">الرجاء تحديث الصفحة</p>
+                                    <button onclick="useFallbackMap()" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg">
+                                        استخدام خريطة بديلة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="customerNotes">ملاحظات</label>
+                    <textarea id="customerNotes" 
+                              class="form-input" 
+                              rows="2" 
+                              placeholder="أي ملاحظات إضافية للطلب"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">
+                    تأكيد الطلب
+                </button>
+            </form>
+
+            <!-- Order Tracking UI -->
+            <div id="orderTracking" class="hidden mt-6 p-4 bg-white rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">تتبع الطلب</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium">حالة الطلب:</span>
+                        <span id="orderStatus" class="px-3 py-1 rounded-full text-sm"></span>
+                    </div>
+                    <div id="prepTimeContainer" class="hidden">
+                        <div class="prepTimeContainer">
+                            <svg class="circular-progress" width="120" height="120">
+                                <circle class="bg" cx="60" cy="60" r="52"></circle>
+                                <circle class="progress" cx="60" cy="60" r="52"></circle>
+                            </svg>
+                            <div id="prepTimeRemaining" class="countdown-text"></div>
+                        </div>
+                    </div>
+                    <div id="orderDetails" class="text-sm text-gray-600"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="hero-pattern text-white py-16 px-4 sm:px-6 lg:px-8 mb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center hero-content">
+                <div class="logo-container">
+                    <img src="https://static.wixstatic.com/media/6460ca_5d280967adee41e7b349dbfb05606601~mv2.png/v1/fill/w_280,h_137,al_c,lg_1,q_85,enc_avif,quality_auto/640d9c48502f74732032b896bf93fabe1638450070.png" 
+                         alt="فانيلو كفرقاسم"
+                         class="mx-auto">
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">فانيلو كفرقاسم</h1>
+                <p class="text-xl opacity-90 mb-8">أشهى أنواع الآيس كريم والحلويات المثلجة</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Section -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Title -->
+        <h1 class="page-title">قائمة الطعام</h1>
+        
+        <!-- Category Navigation (hidden on mobile) -->
+        <div class="category-nav overflow-x-auto">
+            <div class="scroll-indicator left"></div>
+            <div class="scroll-indicator right"></div>
+            <div class="flex space-x-4 rtl:space-x-reverse" id="categoryNav">
+                <!-- Categories will be loaded here -->
+            </div>
+        </div>
+        <div class="scroll-dots" id="scrollDots">
+            <div class="scroll-dot active"></div>
+            <div class="scroll-dot"></div>
+            <div class="scroll-dot"></div>
+        </div>
+
+        <!-- Menu Items Grid -->
+        <div id="menuItems">
+            <!-- Menu items will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Update tracking button HTML -->
+    <button class="tracking-btn" id="trackingBtn" title="تتبع الطلب" onclick="showOrderTracking()">
+        <div class="pulse"></div>
+        <i class="fas fa-clock"></i>
+        <span class="order-number" id="trackingOrderNumber"></span>
+    </button>
+
+    <script>
+        let cart = {};
+        let menuData = {};
+        let map;
+        let marker;
+        let geocoder;
+        let ws;
+        let activeCountdowns = new Map();
+        let messageQueue = new Map(); // Add message queue for debouncing
+        let renderQueue = new Set();
+        let isRendering = false;
+        let countdownTimers = new Map();
+        const COUNTDOWN_UPDATE_INTERVAL = 1000; // 1 second
+
+        // Add efficient rendering function
+        function queueOrderRender(orderId) {
+            renderQueue.add(orderId);
+            if (!isRendering) {
+                isRendering = true;
+                requestAnimationFrame(processRenderQueue);
+            }
+        }
+
+        function processRenderQueue() {
+            if (renderQueue.size === 0) {
+                isRendering = false;
+                return;
+            }
+
+            const orderId = renderQueue.values().next().value;
+            renderQueue.delete(orderId);
+            
+            const order = orders[orderId];
+            if (order) {
+                const orderElement = document.getElementById(`order-${orderId}`);
+                if (orderElement) {
+                    updateOrderElement(orderElement, order);
+                }
+            }
+
+            requestAnimationFrame(processRenderQueue);
+        }
+
+        function updateOrderElement(element, order) {
+            // Preserve existing update logic
+            element.innerHTML = `
+                <h3>Order #${order.OrderID || order.id}</h3>
+                <p>Status: ${order.status}</p>
+                <p>Customer: ${order.customer.name}</p>
+                <p>Phone: ${order.customer.phone}</p>
+                <p>Total: ${order.total} ${getCurrencySymbol(order.items[0]?.currency || 'ILS')}</p>
+                <div class="order-items">
+                    ${order.items.map(item => `
+                        <div class="order-item-detail">
+                            <span>${item.name}</span>
+                            <span>x${item.quantity}</span>
+                            <span>${item.price} ${getCurrencySymbol(item.currency || 'ILS')}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ${order.prepTime ? `<div class="countdown mt-2 font-bold"></div>` : ''}
+            `;
+
+            // Handle countdown if needed
+            if (order.prepTime && order.countdownStartTime) {
+                const timeLeft = getTimeLeft(order.countdownStartTime, order.prepTime);
+                if (timeLeft > 0) {
+                    startCountdown(order.OrderID || order.id, timeLeft);
+                }
+            }
+        }
+
+        // Modify displayOrders to use the new rendering system
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('orders-list');
+            if (!ordersList) return;
+            
+            orders.forEach(order => {
+                const orderId = order.OrderID || order.id;
+                let orderElement = document.getElementById(`order-${orderId}`);
+                
+                if (!orderElement) {
+                    orderElement = document.createElement('div');
+                    orderElement.className = 'order-item';
+                    orderElement.id = `order-${orderId}`;
+                    ordersList.appendChild(orderElement);
+                }
+                
+                queueOrderRender(orderId);
+            });
+        }
+
+        // Fetch orders from the server
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch orders');
+                }
+                const orders = await response.json();
+                displayOrders(orders);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        // Initialize WebSocket
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:3001/ws`;
+
+            // Close existing connection if any
+            if (ws) {
+                ws.close();
+            }
+
+            // Create new WebSocket connection
+            ws = new WebSocket(wsUrl);
+
+            // WebSocket event handlers
+            ws.onopen = () => {
+                console.log('WebSocket connection established');
+            };
+
+            // Add debounce function
+            function debounceMessage(type, data, delay = 1000) {
+                const key = `${type}-${JSON.stringify(data)}`;
+                if (messageQueue.has(key)) {
+                    clearTimeout(messageQueue.get(key));
+                }
+                messageQueue.set(key, setTimeout(() => {
+                    handleWebSocketMessage({ data: JSON.stringify({ type, data }) });
+                    messageQueue.delete(key);
+                }, delay));
+            }
+
+            // Modify WebSocket message handler to use debouncing
+            ws.onmessage = async (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    // Use debouncing for frequent updates
+                    if (data.type === 'order_update' && data.order) {
+                        debounceMessage('order_update', data.order);
+                    } else if (data.type === 'orders' && data.orders) {
+                        debounceMessage('orders', data.orders);
+                    } else {
+                        // Handle non-frequent messages immediately
+                        handleWebSocketMessage(event);
+                    }
+                } catch (error) {
+                    console.error('Error handling WebSocket message:', error);
+                }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+                // Attempt to reconnect after 5 seconds
+                setTimeout(initWebSocket, 5000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMenuData();
+            // Add click handler for cart button
+            document.getElementById('cartBtn').addEventListener('click', () => {
+                console.log('Cart button clicked'); // Debug log
+                const modal = document.getElementById('orderModal');
+                const currentOrderId = localStorage.getItem('currentOrderId');
+                
+                // If there's an active order, just show empty cart without clearing tracking
+                if (currentOrderId) {
+                    // Hide tracking UI but keep the tracking button
+                    const trackingUI = document.getElementById('orderTracking');
+                    if (trackingUI) trackingUI.style.display = 'none';
+                    
+                    // Show empty cart state
+                    const cartItems = document.getElementById('cartItems');
+                    const cartSummary = document.getElementById('cartSummary');
+                    const orderForm = document.getElementById('orderForm');
+                    const emptyCartMessage = document.getElementById('emptyCartMessage');
+                    
+                    if (cartItems) cartItems.style.display = 'none';
+                    if (cartSummary) cartSummary.style.display = 'none';
+                    if (orderForm) orderForm.style.display = 'block';
+                    if (emptyCartMessage) emptyCartMessage.classList.remove('hidden');
+                    
+                    // Don't clear the cart when there's an active order
+                    // cart = {};
+                    // updateCartBadge();
+                }
+                
+                modal.style.display = 'block';
+                openOrderModal();
+            });
+            document.getElementById('detectLocation').addEventListener('click', detectLocation);
+            document.getElementById('orderForm').addEventListener('submit', handleOrderSubmission);
+            
+            // Initialize map with timeout
+            initMapWithTimeout();
+            
+            initWebSocket();
+
+            // Initialize delivery fields based on default selection
+            toggleDeliveryFields(document.getElementById('deliveryType').value);
+
+            // Add periodic sync for active countdowns (every 30 seconds)
+            setInterval(() => {
+                activeCountdowns.forEach((countdown, orderId) => {
+                    // Only sync if more than 30 seconds have passed since last sync
+                    if (Date.now() - countdown.lastSyncTime >= 30000) {
+                        syncCountdown(orderId);
+                    }
+                });
+            }, 30000);
+
+            // Initialize tracking UI and button if there's an active order
+            const currentOrderId = localStorage.getItem('currentOrderId');
+            if (currentOrderId) {
+                // Initialize tracking button
+                const trackingBtn = document.getElementById('trackingBtn');
+                const trackingOrderNumber = document.getElementById('trackingOrderNumber');
+                trackingBtn.style.display = 'flex';
+                trackingOrderNumber.textContent = `#${currentOrderId}`;
+
+                // Initialize tracking UI
+                const orderItems = JSON.parse(localStorage.getItem('currentOrderItems') || '[]');
+                const orderTotal = localStorage.getItem('currentOrderTotal');
+                
+                // Hide cart and form
+                document.getElementById('cartItems').style.display = 'none';
+                document.getElementById('cartSummary').style.display = 'none';
+                document.getElementById('orderForm').style.display = 'none';
+                
+                // Show tracking UI
+                const trackingUI = document.getElementById('orderTracking');
+                trackingUI.classList.remove('hidden');
+                trackingUI.style.display = 'block';
+                
+                // Update order details
+                const orderDetails = document.getElementById('orderDetails');
+                orderDetails.innerHTML = `
+                    <div class="mb-2 font-bold">رقم الطلب: ${currentOrderId}</div>
+                    <div class="mb-2">المنتجات: ${orderItems.map(item => `${item.name} x${item.quantity}`).join(', ')}</div>
+                    <div>المجموع: ${orderTotal} ₪</div>
+                `;
+                
+                // Start tracking order status
+                const orderStatus = document.getElementById('orderStatus');
+                const prepTimeContainer = document.getElementById('prepTimeContainer');
+                const prepTimeRemaining = document.getElementById('prepTimeRemaining');
+                const prepTimeProgress = document.getElementById('prepTimeProgress');
+                
+                trackOrderStatus(currentOrderId, orderStatus, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+            }
+        });
+
+        // Initialize map with a timeout to detect if it's taking too long
+        function initMapWithTimeout() {
+            console.log('Initializing map with timeout');
+            const mapDiv = document.getElementById('map');
+            const loadingDiv = document.querySelector('.map-loading');
+            const errorDiv = document.querySelector('.map-error');
+            
+            if (!mapDiv) {
+                console.error('Map container not found');
+                return;
+            }
+            
+            // Show loading state
+            mapDiv.style.display = 'none';
+            loadingDiv.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            
+            // Set a timeout to show the error if the map doesn't load within 10 seconds
+            const mapTimeout = setTimeout(() => {
+                console.error('Map loading timed out');
+                loadingDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+            }, 10000);
+            
+            // Try to initialize the map
+            initMap().then(() => {
+                clearTimeout(mapTimeout);
+            }).catch(error => {
+                console.error('Error initializing map:', error);
+                clearTimeout(mapTimeout);
+                loadingDiv.classList.add('hidden');
+                errorDiv.classList.remove('hidden');
+            });
+        }
+
+        // Initialize map
+        async function initMap() {
+            try {
+                console.log('Initializing map...'); // Debug log
+                
+                // Show loading state
+                const mapDiv = document.getElementById('map');
+                const loadingDiv = document.querySelector('.map-loading');
+                const errorDiv = document.querySelector('.map-error');
+                
+                if (!mapDiv) {
+                    console.error('Map container not found');
+                    return;
+                }
+                
+                // Show loading state
+                mapDiv.style.display = 'none';
+                loadingDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+
+                // Default center (Israel)
+                const defaultCenter = { lat: 31.7683, lng: 35.2137 };
+                
+                // Check if Google Maps API is loaded
+                if (typeof google === 'undefined') {
+                    console.error('Google Maps API not loaded');
+                    throw new Error('Google Maps API not loaded');
+                }
+                
+                // Load the required libraries with retry mechanism
+                console.log('Loading Google Maps libraries...'); // Debug log
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        const { Map } = await google.maps.importLibrary("maps");
+                        const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+                        const { Geocoder } = await google.maps.importLibrary("geocoding");
+                        const { PlaceAutocompleteElement } = await google.maps.importLibrary("places");
+                        
+                        console.log('Google Maps libraries loaded successfully'); // Debug log
+                        
+                        // Create the map with proper Map ID configuration
+                        map = new Map(mapDiv, {
+                            center: defaultCenter,
+                            zoom: 7,
+                            mapTypeControl: false,
+                            streetViewControl: false,
+                            fullscreenControl: true,
+                            zoomControl: true,
+                            mapId: 'vanillo_map',
+                            mapTypeId: 'roadmap'
+                        });
+                        
+                        console.log('Map created successfully'); // Debug log
+
+                        // Initialize geocoder
+                        geocoder = new Geocoder();
+                        
+                        // Initialize the autocomplete
+                        const addressInput = document.getElementById('customerAddress');
+                        if (addressInput) {
+                            const autocomplete = new PlaceAutocompleteElement({
+                                inputElement: addressInput,
+                                componentRestrictions: { country: 'il' }
+                            });
+
+                            // Handle place selection
+                            autocomplete.addEventListener('place_changed', async () => {
+                                const place = autocomplete.value;
+                                if (place?.geometry) {
+                                    updateMarker(place.geometry.location);
+                                } else {
+                                    // If we don't have geometry, try to geocode the address
+                                    try {
+                                        const result = await geocoder.geocode({ address: place.formatted_address });
+                                        if (result.results[0]) {
+                                            updateMarker(result.results[0].geometry.location);
+                                        }
+                                    } catch (error) {
+                                        console.error('Error geocoding address:', error);
+                                    }
+                                }
+                            });
+                        }
+
+                        // Handle map click
+                        map.addListener('click', (e) => {
+                            console.log('Map clicked:', e.latLng.toJSON()); // Debug log
+                            updateMarker(e.latLng);
+                        });
+                        
+                        // Show map and hide loading
+                        mapDiv.style.display = 'block';
+                        loadingDiv.classList.add('hidden');
+
+                        // Try to detect location immediately
+                        detectLocation();
+                        
+                        console.log('Map initialization completed successfully'); // Debug log
+                        break; // Success, exit the retry loop
+                    } catch (error) {
+                        retryCount++;
+                        console.error(`Error loading Google Maps libraries (attempt ${retryCount}/${maxRetries}):`, error);
+                        
+                        if (retryCount >= maxRetries) {
+                            throw error; // Re-throw if we've exhausted retries
+                        }
+                        
+                        // Wait before retrying
+                        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+                    }
+                }
+            } catch (error) {
+                console.error('Error initializing map:', error);
+                // Show error message
+                const mapDiv = document.getElementById('map');
+                const loadingDiv = document.querySelector('.map-loading');
+                const errorDiv = document.querySelector('.map-error');
+                
+                if (mapDiv) mapDiv.style.display = 'none';
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (errorDiv) {
+                    errorDiv.classList.remove('hidden');
+                    errorDiv.innerHTML = `
+                        <div class="text-center">
+                            <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                            <p>حدث خطأ في تحميل الخريطة</p>
+                            <p class="text-sm">الرجاء تحديث الصفحة</p>
+                            <button onclick="window.location.reload()" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg">
+                                تحديث الصفحة
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Update marker position
+        async function updateMarker(location) {
+            try {
+                // Remove existing marker if any
+                if (marker) {
+                    marker.setMap(null);
+                }
+
+                // Create a proper LatLng object if we receive coordinates
+                let position;
+                if (location instanceof google.maps.LatLng) {
+                    position = location;
+                } else if (location.lat && location.lng) {
+                    if (typeof location.lat === 'function') {
+                        position = location; // Already a LatLng object
+                    } else {
+                        position = new google.maps.LatLng(location.lat, location.lng);
+                    }
+                } else {
+                    console.error('Invalid location:', location);
+                    return;
+                }
+
+                console.log('Setting marker at position:', position.toJSON()); // Debug log
+
+                // Create the marker element
+                const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+                
+                // Create a div element for the marker with explicit styling
+                const markerDiv = document.createElement('div');
+                markerDiv.className = 'marker-container';
+                markerDiv.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 32px;
+                    height: 32px;
+                `;
+                markerDiv.innerHTML = `
+                    <div class="marker-pulse" style="color: #7C4DFF; font-size: 32px;">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                `;
+
+                // Create new marker
+                marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: position,
+                    content: markerDiv,
+                    draggable: true,
+                    title: 'اسحب لتغيير الموقع'
+                });
+
+                // Add drag event listeners
+                marker.addListener('dragend', () => {
+                    const newPos = marker.position;
+                    updateMarkerPosition(newPos);
+                    reverseGeocode(newPos);
+                });
+
+                // Update marker position
+                updateMarkerPosition(position);
+
+                // Center map on marker
+                map.setCenter(position);
+                map.setZoom(15);
+
+                // Reverse geocode the location
+                reverseGeocode(position);
+            } catch (error) {
+                console.error('Error updating marker:', error);
+                console.error('Location data:', location); // Debug log
+            }
+        }
+
+        // Helper function to update marker position data
+        function updateMarkerPosition(position) {
+            try {
+                if (!position || !position.lat || !position.lng) {
+                    console.error('Invalid position:', position);
+                    return;
+                }
+
+                // Get lat/lng using appropriate method
+                const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
+                const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
+
+                // Update hidden inputs with the coordinates
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+
+                console.log('Updated position:', { lat, lng }); // Debug log
+            } catch (error) {
+                console.error('Error updating marker position:', error);
+            }
+        }
+
+        // Reverse geocode location to address
+        async function reverseGeocode(location) {
+            try {
+                if (!location || !location.lat || !location.lng) {
+                    console.error('Invalid location for geocoding:', location);
+                    return;
+                }
+
+                const response = await geocoder.geocode({ location: location });
+                if (response.results[0]) {
+                    const address = response.results[0].formatted_address;
+                    document.getElementById('customerAddress').value = address;
+                }
+            } catch (error) {
+                console.error('Error reverse geocoding:', error);
+            }
+        }
+
+        // Detect user's location
+        function detectLocation() {
+            if (!navigator.geolocation) {
+                console.error('Geolocation is not supported by this browser');
+                return;
+            }
+            
+            console.log('Detecting user location...'); // Debug log
+            
+            // Show loading state
+            const loadingDiv = document.querySelector('.map-loading');
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log('Location detected:', position.coords); // Debug log
+                    const location = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    updateMarker(location);
+                    reverseGeocode(new google.maps.LatLng(location.lat, location.lng));
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                },
+                (error) => {
+                    console.error('Error getting location:', error);
+                    // Show error message
+                    const errorDiv = document.querySelector('.map-error');
+                    if (errorDiv) {
+                        errorDiv.classList.remove('hidden');
+                        errorDiv.innerHTML = `
+                            <div class="text-center">
+                                <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+                                <p>حدث خطأ في تحديد موقعك</p>
+                                <p class="text-sm">الرجاء إدخال العنوان يدوياً</p>
+                            </div>
+                        `;
+                    }
+                    if (loadingDiv) loadingDiv.classList.add('hidden');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // Load menu data
+        async function loadMenuData() {
+            try {
+                const response = await fetch('/api/menu');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch menu data');
+                }
+                menuData = await response.json();
+                displayItems();
+            } catch (error) {
+                console.error('Error loading menu data:', error);
+            }
+        }
+
+        // Display menu items with categories
+        function displayItems() {
+            const menuItemsContainer = document.getElementById('menuItems');
+            const categoryNav = document.getElementById('categoryNav');
+            const scrollDots = document.getElementById('scrollDots');
+            let categories = new Set();
+            
+            // Get all categories from menuData.categories array
+            menuData.categories.forEach(category => {
+                categories.add(category.name);
+            });
+            
+            // Create category navigation (only for desktop)
+            if (window.innerWidth > 640) {
+                const categoryHTML = Array.from(categories).map(category => `
+                    <button class="category-btn px-4 py-2 rounded-full bg-white shadow-sm hover:bg-gray-50 transition-colors whitespace-nowrap" 
+                            onclick="filterByCategory('${category}')">
+                        ${category}
+                    </button>
+                `).join('');
+                
+                // Add "All" category button
+                const allCategoriesHTML = `
+                    <button class="category-btn px-4 py-2 rounded-full bg-primary text-white shadow-sm hover:bg-primary-dark transition-colors whitespace-nowrap" 
+                            onclick="filterByCategory('all')">
+                        الكل
+                    </button>
+                    ${categoryHTML}
+                `;
+                
+                categoryNav.innerHTML = allCategoriesHTML;
+                
+                // Update scroll dots
+                const numCategories = categories.size + 1;
+                let dotsHTML = '';
+                for (let i = 0; i < Math.min(3, numCategories); i++) {
+                    dotsHTML += `<div class="scroll-dot${i === 0 ? ' active' : ''}"></div>`;
+                }
+                scrollDots.innerHTML = dotsHTML;
+            }
+            
+            // Display all items by category
+            let menuHTML = '';
+            menuData.categories.forEach(category => {
+                menuHTML += `
+                    <div class="category-section" id="category-${category.name}">
+                        <h2 class="category-section-title">${category.name}</h2>
+                        <div class="menu-items-row">
+                            ${menuData.items.filter(item => item.categoryId === category.id)
+                                .map(item => createMenuItemHTML(item)).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            menuItemsContainer.innerHTML = menuHTML;
+        }
+
+        // Helper function to create menu item HTML
+        function createMenuItemHTML(item) {
+            const itemId = item.id || Math.random().toString(36).substr(2, 9);
+            return `
+                <div class="menu-item">
+                    <div class="image-container">
+                        <img src="${item.image || 'https://via.placeholder.com/400x225'}" 
+                             alt="${item.name}">
+                    </div>
+                    <div class="content">
+                        <h3>${item.name}</h3>
+                        <div class="price">${item.price} ₪</div>
+                        <p class="description">${item.description || ''}</p>
+                        <button onclick="addToCart('${itemId}', '${item.name.replace(/'/g, "\\'")}', ${item.price})">
+                            أضف للسلة
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update filterByCategory function
+        function filterByCategory(category) {
+            const menuItemsContainer = document.getElementById('menuItems');
+            const categoryButtons = document.querySelectorAll('.category-btn');
+            
+            // Update active category button
+            categoryButtons.forEach(btn => {
+                if (btn.textContent.trim() === category || (category === 'all' && btn.textContent.trim() === 'الكل')) {
+                    btn.classList.add('active');
+                    btn.classList.remove('bg-white', 'hover:bg-gray-50');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('bg-white', 'hover:bg-gray-50');
+                }
+            });
+            
+            // Scroll to category section smoothly
+            if (category !== 'all') {
+                const categorySection = document.getElementById(`category-${category}`);
+                if (categorySection) {
+                    categorySection.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start'
+                    });
+                }
+            } else {
+                // If "all" is selected, scroll to the top of the menu
+                if (menuItemsContainer) {
+                    menuItemsContainer.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start'
+                    });
+                }
+            }
+        }
+
+        // Open order modal
+        function openOrderModal() {
+            console.log('Opening modal with cart:', cart); // Debug log
+            
+            const modal = document.getElementById('orderModal');
+            const cartItems = document.getElementById('cartItems');
+            const cartTotalWithTax = document.getElementById('cartTotalWithTax');
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            const cartSummary = document.getElementById('cartSummary');
+            const orderForm = document.getElementById('orderForm');
+            const orderTracking = document.getElementById('orderTracking');
+            const cartSummaryRow = document.querySelector('.flex.justify-between.items-center.mt-2.pt-2.border-t.border-gray-200');
+            
+            // Prevent background scrolling
+            document.body.classList.add('modal-open');
+            
+            // Always show the modal
+            modal.style.display = 'block';
+            
+            // Check if cart is empty
+            if (Object.keys(cart).length === 0) {
+                console.log('Cart is empty'); // Debug log
+                emptyCartMessage.classList.remove('hidden');
+                cartSummary.style.display = 'none';
+                orderForm.style.display = 'none';
+                cartItems.innerHTML = '';
+                cartItems.style.display = 'none';
+                if (cartSummaryRow) cartSummaryRow.style.display = 'none';
+                return;
+            }
+            
+            console.log('Cart has items:', cart); // Debug log
+            
+            // Show cart contents and form
+            emptyCartMessage.classList.add('hidden');
+            cartSummary.style.display = 'block'; // Use style.display instead of classList
+            orderForm.style.display = 'block';
+            cartItems.style.display = 'block'; // Ensure cart items container is visible
+            if (cartSummaryRow) cartSummaryRow.style.display = 'flex';
+            
+            // If there's an active order in tracking, hide the tracking UI
+            const currentOrderId = localStorage.getItem('currentOrderId');
+            if (currentOrderId) {
+                orderTracking.style.display = 'none';
+            }
+            
+            // Display cart items
+            let total = 0;
+            const cartItemsHTML = Object.entries(cart).map(([id, item]) => {
+                console.log('Processing cart item:', item); // Debug log for each item
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                return `
+                    <div class="cart-item bg-white rounded-lg shadow-sm p-4 mb-4" id="cart-item-${id}">
+                        <div class="flex justify-between items-start">
+                            <div class="cart-item-details flex-1">
+                                <h4 class="font-bold text-lg mb-2">${item.name}</h4>
+                                <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                                    <div class="cart-item-quantity flex items-center bg-gray-100 rounded-lg p-2">
+                                        <button class="quantity-btn minus w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50" onclick="updateQuantity('${id}', -1)">
+                                            <i class="fas fa-minus text-gray-600"></i>
+                                        </button>
+                                        <span class="quantity-display mx-4 font-bold">${item.quantity}</span>
+                                        <button class="quantity-btn plus w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-gray-50" onclick="updateQuantity('${id}', 1)">
+                                            <i class="fas fa-plus text-gray-600"></i>
+                                        </button>
+                                    </div>
+                                    <div class="cart-item-price font-bold text-lg text-primary">
+                                        ${itemTotal.toFixed(2)} ₪
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="cart-item-remove text-red-500 hover:text-red-700 p-2" onclick="removeFromCart('${id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log('Generated cart HTML:', cartItemsHTML); // Debug log
+            cartItems.innerHTML = cartItemsHTML;
+            
+            // Update total display
+            cartTotalWithTax.textContent = `${total.toFixed(2)} ₪`;
+            console.log('Updated total:', total.toFixed(2)); // Debug log for total
+
+            // Try to detect location when modal opens
+            if (map) {
+                detectLocation();
+            }
+        }
+
+        // Add item to cart
+        function addToCart(itemId, itemName, price) {
+            console.log('Adding to cart:', { itemId, itemName, price }); // Debug log
+            
+            if (!itemId) {
+                console.error('Item ID is undefined');
+                return;
+            }
+            
+            // Use the simple numeric ID
+            if (!cart[itemId]) {
+                cart[itemId] = {
+                    id: itemId,
+                    name: itemName,
+                    price: price,
+                    quantity: 0
+                };
+            }
+            cart[itemId].quantity += 1;
+            updateCartBadge();
+            
+            // Show a small notification that item was added
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            notification.textContent = 'تمت إضافة المنتج إلى السلة';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+
+            // Debug log the current cart state
+            console.log('Current cart state:', cart);
+        }
+
+        // Update cart badge
+        function updateCartBadge() {
+            const total = Object.values(cart).reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cartBadge').textContent = total;
+        }
+
+        // Update item quantity in cart
+        function updateQuantity(itemId, change) {
+            console.log('Updating quantity:', { itemId, change }); // Debug log
+            if (!cart[itemId]) return;
+            
+            const newQuantity = cart[itemId].quantity + change;
+            if (newQuantity <= 0) {
+                removeFromCart(itemId);
+                return;
+            }
+            
+            cart[itemId].quantity = newQuantity;
+            updateCartBadge();
+            openOrderModal(); // Refresh the modal
+        }
+        
+        // Remove item from cart
+        function removeFromCart(itemId) {
+            console.log('Removing item:', itemId); // Debug log
+            if (!cart[itemId]) return;
+            
+            delete cart[itemId];
+            updateCartBadge();
+            openOrderModal(); // Refresh the modal
+        }
+
+        // Toggle time fields
+        function toggleTimeFields(value) {
+            const timeFields = document.getElementById('timeFields');
+            if (value === 'scheduled') {
+                timeFields.classList.remove('hidden');
+            } else {
+                timeFields.classList.add('hidden');
+            }
+        }
+
+        // Toggle delivery address fields based on delivery type
+        function toggleDeliveryFields(deliveryType) {
+            const deliveryAddressFields = document.getElementById('deliveryAddressFields');
+            const addressInput = document.getElementById('customerAddress');
+            const mapContainer = document.querySelector('.map-container');
+            
+            if (deliveryType === 'delivery') {
+                deliveryAddressFields.style.display = 'block';
+                addressInput.required = true;
+                mapContainer.style.display = 'block';
+            } else {
+                deliveryAddressFields.style.display = 'none';
+                addressInput.required = false;
+                mapContainer.style.display = 'none';
+            }
+        }
+
+        // Handle order submission
+        async function handleOrderSubmission(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            
+                // Get form values
+                const customerName = document.getElementById('customerName');
+                const customerPhone = document.getElementById('customerPhone');
+                const deliveryType = document.getElementById('deliveryType');
+                const customerAddress = document.getElementById('customerAddress');
+                const customerNotes = document.getElementById('customerNotes');
+
+                // Reset previous error states
+                document.querySelectorAll('.error-message').forEach(el => el.remove());
+                document.querySelectorAll('.form-input.error').forEach(el => el.classList.remove('error'));
+
+                // Validate required fields
+                let hasError = false;
+
+                if (!customerName.value.trim()) {
+                    showError(customerName, 'الرجاء إدخال الاسم');
+                    hasError = true;
+                }
+
+                if (!customerPhone.value.trim()) {
+                    showError(customerPhone, 'الرجاء إدخال رقم الهاتف');
+                    hasError = true;
+                } else if (!customerPhone.value.match(/^05\d{8}$/)) {
+                    showError(customerPhone, 'الرجاء إدخال رقم هاتف إسرائيلي صحيح (يبدأ بـ 05 ويتكون من 10 أرقام)');
+                    hasError = true;
+                }
+
+                if (deliveryType.value === 'delivery' && !customerAddress.value.trim()) {
+                    showError(customerAddress, 'الرجاء إدخال عنوان التوصيل');
+                    hasError = true;
+                }
+
+                if (hasError) {
+                return;
+                }
+
+                // Check if cart is empty
+                if (Object.keys(cart).length === 0) {
+                alert('السلة فارغة. الرجاء إضافة منتجات قبل تأكيد الطلب');
+                return;
+                }
+                
+                // Store cart data before clearing it
+                const orderItems = Object.values(cart).map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                }));
+                const orderTotal = Object.values(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                
+                // Create order data object
+                const orderData = {
+                    status: 'pending',
+                    customer: {
+                        name: customerName.value,
+                        phone: customerPhone.value,
+                        address: deliveryType.value === 'delivery' ? customerAddress.value : null,
+                        notes: customerNotes.value
+                    },
+                    items: orderItems,
+                    deliveryType: deliveryType.value,
+                    total: orderTotal,
+                    orderTime: new Date().toISOString()
+                };
+                
+            try {
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('فشل في تقديم الطلب');
+                }
+                
+                const result = await response.json();
+                console.log('Order submitted successfully:', result); // Debug log
+                
+                // Clear cart and update UI
+                cart = {};
+                updateCartBadge();
+                
+                // Show success message
+                alert('تم تقديم الطلب بنجاح!');
+                
+                // Reset form
+                form.reset();
+                
+                // Switch to tracking view with the stored order items
+                switchToTrackingView(result.OrderID || result.orderId, orderItems, orderTotal);
+                
+            } catch (error) {
+                console.error('Error submitting order:', error);
+                alert('فشل في تقديم الطلب. الرجاء المحاولة مرة أخرى.');
+            }
+        }
+
+        // Helper function to show error message
+        function showError(inputElement, message) {
+            inputElement.classList.add('error');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+            errorDiv.textContent = message;
+            inputElement.parentNode.appendChild(errorDiv);
+        }
+
+        function getCurrencySymbol(currency) {
+            switch (currency) {
+                case 'ILS': return '₪';
+                case 'SAR': return 'ريال';
+                case 'USD': return '$';
+                case 'EUR': return '€';
+                case 'GBP': return '£';
+                default: return 'ريال';
+            }
+        }
+
+        // Add countdown timer management
+        function startCountdown(orderId, timeLeft) {
+            // Clear existing timer if any
+            if (countdownTimers.has(orderId)) {
+                clearInterval(countdownTimers.get(orderId).interval);
+            }
+
+            const countdownElement = document.querySelector(`#order-${orderId} .countdown`);
+            if (!countdownElement) return;
+
+            // Create new timer
+            const timer = {
+                timeLeft,
+                interval: setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer.interval);
+                        countdownTimers.delete(orderId);
+                        countdownElement.textContent = 'Ready!';
+                        return;
+                    }
+                    
+                    // Update countdown display
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }, COUNTDOWN_UPDATE_INTERVAL)
+            };
+
+            countdownTimers.set(orderId, timer);
+        }
+
+        // Add cleanup function for countdown timers
+        function cleanupCountdownTimers() {
+            countdownTimers.forEach(timer => {
+                clearInterval(timer.interval);
+            });
+            countdownTimers.clear();
+        }
+
+        // Add cleanup on page unload
+        window.addEventListener('unload', cleanupCountdownTimers);
+
+        async function syncCountdown(orderId) {
+            try {
+                // Ensure orderId is a number
+                const numericOrderId = parseInt(orderId, 10);
+                if (isNaN(numericOrderId)) {
+                    console.error('Invalid order ID:', orderId);
+                    return;
+                }
+                
+                const response = await fetch(`/api/orders/${numericOrderId}/countdown`);
+                const data = await response.json();
+                
+                if (data.timeLeft > 0) {
+                    startCountdown(numericOrderId, data.timeLeft);
+                }
+            } catch (error) {
+                console.error('Error syncing countdown:', error);
+            }
+        }
+
+        // Switch to tracking view
+        function switchToTrackingView(orderId, orderItems, orderTotal) {
+            const modalContent = document.querySelector('.modal-content');
+            const trackingUI = document.getElementById('orderTracking');
+            const trackingBtn = document.getElementById('trackingBtn');
+            const trackingOrderNumber = document.getElementById('trackingOrderNumber');
+            
+            // Hide cart items, cart summary, and form
+            document.getElementById('cartItems').style.display = 'none';
+            document.getElementById('cartSummary').style.display = 'none';
+            document.getElementById('orderForm').style.display = 'none';
+            
+            // Show tracking UI
+            trackingUI.classList.remove('hidden');
+            trackingUI.style.display = 'block';
+            
+            // Show tracking button
+            trackingBtn.style.display = 'flex';
+            trackingOrderNumber.textContent = `#${orderId}`;
+            
+            // Store order ID in localStorage for persistence
+            localStorage.setItem('currentOrderId', orderId);
+            localStorage.setItem('currentOrderItems', JSON.stringify(orderItems));
+            localStorage.setItem('currentOrderTotal', orderTotal);
+            
+            // Update order details
+            const orderDetails = document.getElementById('orderDetails');
+            const itemsList = orderItems.map(item => `
+                <div class="flex justify-between items-center mb-2">
+                    <span>${item.name}</span>
+                    <span class="font-bold">x${item.quantity}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)} ₪</span>
+                </div>
+            `).join('');
+            
+            orderDetails.innerHTML = `
+                <div class="mb-4">
+                    <div class="font-bold text-lg mb-2">تفاصيل الطلب #${orderId}</div>
+                    <div class="space-y-2">
+                        ${itemsList}
+                    </div>
+                    <div class="border-t border-gray-200 mt-2 pt-2">
+                        <div class="flex justify-between items-center font-bold">
+                            <span>المجموع الكلي:</span>
+                            <span>${orderTotal.toFixed(2)} ₪</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Start tracking order status
+            const orderStatus = document.getElementById('orderStatus');
+            const prepTimeContainer = document.getElementById('prepTimeContainer');
+            const prepTimeRemaining = document.getElementById('prepTimeRemaining');
+            const prepTimeProgress = document.getElementById('prepTimeProgress');
+            
+            trackOrderStatus(orderId, orderStatus, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+        }
+
+        // Track order status
+        function trackOrderStatus(orderId, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress) {
+            let countdownInterval;
+            let lastStatus = null;
+            let lastUpdateTime = 0;
+            const UPDATE_INTERVAL = 5000; // 5 seconds
+            
+            // Create a dedicated WebSocket message handler for this order
+            const orderMessageHandler = async (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    // Handle order updates for this specific order
+                    if (data.type === 'order_update' && data.order && 
+                        (data.order.OrderID === orderId || data.order.id === orderId)) {
+                        console.log('Received order update for tracked order:', data.order);
+                        
+                        // If order is delivered, clear tracking and return
+                        if (data.order.status === 'delivered') {
+                            clearOrderTracking();
+                            return;
+                        }
+                        
+                        // Update the UI with the new order status
+                        updateOrderStatus(data.order, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+                        
+                        // Store the latest status
+                        lastStatus = data.order;
+                        lastUpdateTime = Date.now();
+                        
+                        // If order is completed, clear from localStorage
+                        if (data.order.status === 'completed') {
+                            localStorage.removeItem('currentOrderId');
+                            localStorage.removeItem('currentOrderItems');
+                            localStorage.removeItem('currentOrderTotal');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error handling WebSocket message for order tracking:', error);
+                }
+            };
+            
+            // Add the message handler to the WebSocket
+            ws.addEventListener('message', orderMessageHandler);
+            
+            // Set up periodic status check as a fallback
+            const statusCheckInterval = setInterval(async () => {
+                try {
+                    // Only fetch if we don't have a recent update
+                    const now = Date.now();
+                    const lastUpdateTime = lastStatus ? new Date(lastStatus.updatedAt || lastStatus.timestamp).getTime() : 0;
+                    
+                    // If we haven't received an update in the last 30 seconds, fetch the latest status
+                    if (now - lastUpdateTime > 30000) {
+                        console.log('Fetching latest order status as fallback');
+                        const response = await fetch(`/api/orders/${orderId}`);
+                        const order = await response.json();
+                        
+                        // Only update if the status has changed
+                        if (!lastStatus || lastStatus.status !== order.status) {
+                            console.log('Status changed, updating UI');
+                            updateOrderStatus(order, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+                            lastStatus = order;
+                        }
+                        
+                        // If order is completed or delivered, clear tracking
+                        if (order.status === 'completed' || order.status === 'delivered') {
+                            clearOrderTracking();
+                            clearInterval(statusCheckInterval);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error in periodic status check:', error);
+                }
+            }, 30000); // Check every 30 seconds
+            
+            // Initial status check
+            fetch(`/api/orders/${orderId}`)
+                .then(response => response.json())
+                .then(order => {
+                    updateOrderStatus(order, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+                    lastStatus = order;
+                    
+                    // If order is completed, clear from localStorage
+                    if (order.status === 'completed') {
+                        localStorage.removeItem('currentOrderId');
+                        localStorage.removeItem('currentOrderItems');
+                        localStorage.removeItem('currentOrderTotal');
+                        clearInterval(statusCheckInterval);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching initial order status:', error);
+                });
+            
+            // Return a cleanup function
+            return () => {
+                ws.removeEventListener('message', orderMessageHandler);
+                clearInterval(statusCheckInterval);
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+            };
+        }
+
+        // Update order status UI
+        function updateOrderStatus(order, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress) {
+            // Update status text and color
+            let statusText, statusColor;
+            switch (order.status) {
+                case 'pending':
+                    statusText = 'قيد الانتظار';
+                    statusColor = 'bg-yellow-100 text-yellow-800';
+                    break;
+                case 'preparing':
+                    statusText = 'قيد التحضير';
+                    statusColor = 'bg-blue-100 text-blue-800';
+                    break;
+                case 'ready':
+                    statusText = 'جاهز للاستلام';
+                    statusColor = 'bg-green-100 text-green-800';
+                    break;
+                case 'completed':
+                    statusText = 'مكتمل';
+                    statusColor = 'bg-gray-100 text-gray-800';
+                    // Don't clear tracking for completed orders
+                    break;
+                case 'delivered':
+                    statusText = 'تم التوصيل';
+                    statusColor = 'bg-gray-100 text-gray-800';
+                    // Only clear tracking for delivered orders
+                    clearOrderTracking();
+                    setTimeout(openOrderModal, 100);
+                    return;
+                default:
+                    statusText = order.status;
+                    statusColor = 'bg-gray-100 text-gray-800';
+            }
+            
+            // Ensure tracking button stays visible for non-delivered orders
+            const trackingBtn = document.getElementById('trackingBtn');
+            if (trackingBtn && order.status !== 'delivered') {
+                trackingBtn.style.display = 'flex';
+            }
+            
+            statusElement.classList.add('status-update-animation');
+            setTimeout(() => {
+                statusElement.classList.remove('status-update-animation');
+            }, 1000);
+            
+            statusElement.textContent = statusText;
+            statusElement.className = `px-3 py-1 rounded-full text-sm ${statusColor}`;
+            
+            // Handle preparation time
+            if (order.status === 'preparing' && order.prepTime) {
+                prepTimeContainer.classList.remove('hidden');
+                
+                // Clear any existing countdown interval
+                if (window.activeCountdownInterval) {
+                    clearInterval(window.activeCountdownInterval);
+                }
+                
+                let timeLeft, totalSeconds;
+                
+                if (order.countdownStartTime) {
+                    const startTime = new Date(order.countdownStartTime).getTime();
+                    const now = Date.now();
+                    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                    totalSeconds = order.prepTime * 60;
+                    timeLeft = Math.max(0, totalSeconds - elapsedSeconds);
+                } else {
+                    totalSeconds = order.prepTime * 60;
+                    timeLeft = totalSeconds;
+                }
+                
+                // Initial update
+                updateCircularProgress(timeLeft, totalSeconds, prepTimeRemaining);
+                
+                // Set up countdown interval
+                window.activeCountdownInterval = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft <= 0) {
+                        clearInterval(window.activeCountdownInterval);
+                        // Fetch the latest order status when countdown completes
+                        fetch(`/api/orders/${order.OrderID || order.id}`)
+                            .then(response => response.json())
+                            .then(updatedOrder => {
+                                updateOrderStatus(updatedOrder, statusElement, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching updated order status:', error);
+                            });
+                    } else {
+                        updateCircularProgress(timeLeft, totalSeconds, prepTimeRemaining);
+                    }
+                }, 1000);
+            } else {
+                prepTimeContainer.classList.add('hidden');
+                // Clear any existing countdown interval
+                if (window.activeCountdownInterval) {
+                    clearInterval(window.activeCountdownInterval);
+                }
+            }
+            
+            // Update order details if available
+            const orderDetails = document.getElementById('orderDetails');
+            if (orderDetails && order.items) {
+                const itemsList = order.items.map(item => `
+                    <div class="flex justify-between items-center mb-2">
+                        <span>${item.name}</span>
+                        <span class="font-bold">x${item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)} ₪</span>
+                    </div>
+                `).join('');
+                
+                orderDetails.innerHTML = `
+                    <div class="mb-2 font-bold">رقم الطلب: ${order.OrderID || order.id}</div>
+                    <div class="mb-2">المنتجات:</div>
+                    ${itemsList}
+                    <div class="mt-2 font-bold">المجموع: ${order.total} ₪</div>
+                `;
+            }
+        }
+
+        function updateCircularProgress(timeLeft, totalSeconds, prepTimeRemaining) {
+            const progressCircle = document.querySelector('.circular-progress .progress');
+            const circumference = 2 * Math.PI * 52; // 2πr where r = 52 (circle radius)
+            const progress = (timeLeft / totalSeconds) * circumference;
+            
+            progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressCircle.style.strokeDashoffset = circumference - progress;
+            
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            prepTimeRemaining.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Close order modal
+        function closeOrderModal() {
+            const modal = document.getElementById('orderModal');
+            const modalTitle = document.querySelector('.modal-content h2');
+            const cartTotalWithTax = document.getElementById('cartTotalWithTax');
+            const cartSummaryRow = document.querySelector('.flex.justify-between.items-center.mt-2.pt-2.border-t.border-gray-200');
+            
+            // Reset modal title
+            if (modalTitle) modalTitle.textContent = 'سلة المشتريات';
+            
+            // Show cart total and summary row if there are items in the cart
+            if (Object.keys(cart).length > 0) {
+                if (cartTotalWithTax) cartTotalWithTax.style.display = 'block';
+                if (cartSummaryRow) cartSummaryRow.style.display = 'flex';
+            }
+            
+            modal.style.display = 'none';
+            // Re-enable background scrolling
+            document.body.classList.remove('modal-open');
+        }
+
+        // Update clearOrderTracking function
+        function clearOrderTracking() {
+            // Only clear if explicitly requested (not from automatic status updates)
+            const currentOrderId = localStorage.getItem('currentOrderId');
+            if (!currentOrderId) return;
+
+            // Clear localStorage
+            localStorage.removeItem('currentOrderId');
+            localStorage.removeItem('currentOrderItems');
+            localStorage.removeItem('currentOrderTotal');
+            
+            // Hide tracking button
+            const trackingBtn = document.getElementById('trackingBtn');
+            if (trackingBtn) {
+                trackingBtn.style.display = 'none';
+            }
+            
+            // Reset UI elements
+            const cartItems = document.getElementById('cartItems');
+            const cartSummary = document.getElementById('cartSummary');
+            const orderForm = document.getElementById('orderForm');
+            const orderTracking = document.getElementById('orderTracking');
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            
+            // Show cart and form, hide tracking
+            if (cartItems) cartItems.style.display = 'block';
+            if (cartSummary) cartSummary.style.display = 'block';
+            if (orderForm) orderForm.style.display = 'block';
+            if (orderTracking) orderTracking.style.display = 'none';
+            if (emptyCartMessage) emptyCartMessage.classList.add('hidden');
+            
+            // Clear cart
+            cart = {};
+            updateCartBadge();
+            
+            // Refresh the cart display
+            openOrderModal();
+        }
+
+        // Add this function to use the fallback map
+        function useFallbackMap() {
+            console.log('Using fallback map');
+            const mapDiv = document.getElementById('map');
+            const fallbackMap = document.getElementById('fallback-map');
+            const errorDiv = document.querySelector('.map-error');
+            
+            if (mapDiv) mapDiv.style.display = 'none';
+            if (errorDiv) errorDiv.classList.add('hidden');
+            if (fallbackMap) {
+                fallbackMap.classList.remove('hidden');
+                fallbackMap.style.display = 'block';
+            }
+            
+            // Update hidden inputs with default coordinates for Kfar Qassem
+            document.getElementById('latitude').value = '32.1147';
+            document.getElementById('longitude').value = '34.9505';
+            document.getElementById('customerAddress').value = 'Kfar Qassem, Israel';
+        }
+
+        // Update showOrderTracking function
+        function showOrderTracking() {
+            const currentOrderId = localStorage.getItem('currentOrderId');
+            if (!currentOrderId) return;
+
+            const modal = document.getElementById('orderModal');
+            const trackingUI = document.getElementById('orderTracking');
+            const cartItems = document.getElementById('cartItems');
+            const cartSummary = document.getElementById('cartSummary');
+            const orderForm = document.getElementById('orderForm');
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            const modalTitle = document.querySelector('.modal-content h2');
+            const cartTotalWithTax = document.getElementById('cartTotalWithTax');
+            const cartSummaryRow = document.querySelector('.flex.justify-between.items-center.mt-2.pt-2.border-t.border-gray-200');
+            
+            // Prevent background scrolling
+            document.body.classList.add('modal-open');
+            
+            // Show modal and tracking UI
+            modal.style.display = 'block';
+            trackingUI.classList.remove('hidden');
+            trackingUI.style.display = 'block';
+            
+            // Hide cart-related elements
+            if (cartItems) cartItems.style.display = 'none';
+            if (cartSummary) cartSummary.style.display = 'none';
+            if (orderForm) orderForm.style.display = 'none';
+            if (emptyCartMessage) emptyCartMessage.classList.add('hidden');
+            if (cartTotalWithTax) cartTotalWithTax.style.display = 'none';
+            if (cartSummaryRow) cartSummaryRow.style.display = 'none';
+            
+            // Update modal title
+            if (modalTitle) modalTitle.textContent = 'تتبع الطلب';
+            
+            // Ensure tracking button stays visible
+            const trackingBtn = document.getElementById('trackingBtn');
+            if (trackingBtn) {
+                trackingBtn.style.display = 'flex';
+            }
+            
+            // Update tracking status
+            const orderStatus = document.getElementById('orderStatus');
+            const prepTimeContainer = document.getElementById('prepTimeContainer');
+            const prepTimeRemaining = document.getElementById('prepTimeRemaining');
+            const prepTimeProgress = document.getElementById('prepTimeProgress');
+            
+            trackOrderStatus(currentOrderId, orderStatus, prepTimeContainer, prepTimeRemaining, prepTimeProgress);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.backgroundColor = COLORS.accent;
+            toast.style.color = 'white';
+            toast.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <span>${message}</span>
+            `;
+            
+            const container = document.getElementById('toastContainer');
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 500);
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 

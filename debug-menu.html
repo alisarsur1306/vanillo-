@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            overflow: auto;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Menu Data</h1>
+    <div id="debug-output"></div>
+
+    <script>
+        async function debugMenuData() {
+            const output = document.getElementById('debug-output');
+            try {
+                // Fetch menu data from the server
+                const response = await fetch('/api/menu');
+                const menuData = await response.json();
+                
+                let html = '<h2>Menu Data Structure</h2>';
+                html += '<pre>' + JSON.stringify(menuData, null, 2) + '</pre>';
+                
+                html += '<h2>Categories</h2>';
+                html += '<pre>' + JSON.stringify(menuData.categories, null, 2) + '</pre>';
+                
+                html += '<h2>Items</h2>';
+                html += '<pre>' + JSON.stringify(menuData.items, null, 2) + '</pre>';
+                
+                // Check if each item has a valid categoryId
+                const categoryIds = menuData.categories.map(category => category.id);
+                html += '<h2>Category IDs</h2>';
+                html += '<pre>' + JSON.stringify(categoryIds, null, 2) + '</pre>';
+                
+                const invalidItems = menuData.items.filter(item => !categoryIds.includes(item.categoryId));
+                if (invalidItems.length > 0) {
+                    html += '<h2 class="error">Items with invalid categoryId</h2>';
+                    html += '<pre>' + JSON.stringify(invalidItems, null, 2) + '</pre>';
+                } else {
+                    html += '<h2 class="success">All items have valid categoryIds</h2>';
+                }
+                
+                // Check items per category
+                html += '<h2>Items per Category</h2>';
+                menuData.categories.forEach(category => {
+                    const categoryItems = menuData.items.filter(item => item.categoryId === category.id);
+                    html += `<p><strong>${category.name}</strong> (${category.id}): ${categoryItems.length} items</p>`;
+                });
+                
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<div class="error">Error debugging menu data: ${error.message}</div>`;
+            }
+        }
+
+        // Run the debug function when the page loads
+        document.addEventListener('DOMContentLoaded', debugMenuData);
+    </script>
+</body>
+</html> 

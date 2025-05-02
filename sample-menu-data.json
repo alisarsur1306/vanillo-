@@ -1,0 +1,59 @@
+{
+  "مميزات فانيلو": [
+    {
+      "name": "كريب نوتيلا",
+      "nameEn": "Nutella Crepe",
+      "description": "كريب محشو بالنوتيلا مع الموز",
+      "price": 25,
+      "image": "https://example.com/images/nutella-crepe.jpg"
+    },
+    {
+      "name": "وافل بالآيس كريم",
+      "nameEn": "Ice Cream Waffle",
+      "description": "وافل بلجيكي مع آيس كريم الفانيليا",
+      "price": 30,
+      "image": "https://example.com/images/ice-cream-waffle.jpg"
+    }
+  ],
+  "كريبات فانيلو": [
+    {
+      "name": "كريب دجاج",
+      "nameEn": "Chicken Crepe",
+      "description": "كريب محشو بالدجاج والخضار",
+      "price": 28,
+      "image": "https://example.com/images/chicken-crepe.jpg"
+    },
+    {
+      "name": "كريب جبنة",
+      "nameEn": "Cheese Crepe",
+      "description": "كريب محشو بالجبنة الموزاريلا",
+      "price": 22,
+      "image": "https://example.com/images/cheese-crepe.jpg"
+    }
+  ],
+  "وافل فانيلو": [
+    {
+      "name": "وافل شوكولاتة",
+      "nameEn": "Chocolate Waffle",
+      "description": "وافل بلجيكي مع صوص الشوكولاتة",
+      "price": 26,
+      "image": "https://example.com/images/chocolate-waffle.jpg"
+    }
+  ],
+  "مشروبات فانيلو": [
+    {
+      "name": "قهوة تركية",
+      "nameEn": "Turkish Coffee",
+      "description": "قهوة تركية أصلية",
+      "price": 12,
+      "image": "https://example.com/images/turkish-coffee.jpg"
+    },
+    {
+      "name": "شاي بالنعناع",
+      "nameEn": "Mint Tea",
+      "description": "شاي أخضر مع النعناع الطازج",
+      "price": 10,
+      "image": "https://example.com/images/mint-tea.jpg"
+    }
+  ]
+} 

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فانيلو - القائمة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #e74c3c;
+            --secondary-color: #2c3e50;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding-bottom: 80px; /* Space for bottom navigation */
+        }
+
+        /* Header Styles */
+        .site-header {
+            background-color: white;
+            box-shadow: var(--box-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 0;
+        }
+
+        .site-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        /* Menu Item Styles */
+        .menu-item {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .menu-item-content {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-item-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .menu-item-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .menu-item-price {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .add-to-cart-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Category Styles */
+        .category-title {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 2rem 0 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        /* Cart Styles */
+        .cart-icon {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .cart-backdrop.active {
+            display: block;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cart-sidebar.active {
+            right: 0;
+        }
+
+        .cart-header {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-items-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .cart-item {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .order-details-summary {
+            padding: 1rem;
+            border-top: 1px solid #eee;
+            background: #f8f9fa;
+        }
+
+        .order-item-summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-total {
+            padding: 1rem;
+            border-top: 1px solid #eee;
+            background: white;
+            font-weight: bold;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: #c0392b;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        /* RTL specific styles */
+        [dir="rtl"] .cart-sidebar {
+            right: -400px;
+        }
+
+        [dir="rtl"] .cart-sidebar.active {
+            right: 0;
+        }
+
+        [dir="rtl"] .cart-icon {
+            right: 1rem;
+        }
+
+        [dir="rtl"] .cart-count {
+            right: -5px;
+        }
+
+        [dir="rtl"] .notification {
+            right: 20px;
+        }
+
+        [dir="rtl"] .btn-group {
+            flex-direction: row-reverse;
+        }
+
+        /* Add styles for category navigation */
+        .category-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            scrollbar-width: thin;
+            margin-bottom: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-nav::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .category-nav::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .category-nav::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .category-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            background: white;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .category-btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Category Section Styles */
+        .category-section {
+            margin-bottom: 2rem;
+            opacity: 1;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+
+        .category-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111111;
+            text-align: right;
+            padding-right: 0.5rem;
+            border-right: 3px solid #7C4DFF;
+        }
+
+        @media (max-width: 640px) {
+            .category-section {
+                margin-bottom: 3rem;
+            }
+
+            .category-section-title {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title text-center">فانيلو</h1>
+        </div>
+    </header>
+
+    <!-- Cart Icon -->
+    <div class="cart-icon" id="cart-icon">
+        <i class="bi bi-cart3"></i>
+        <span class="cart-count" id="cart-count">0</span>
+    </div>
+
+    <!-- Cart Backdrop -->
+    <div class="cart-backdrop" id="cart-backdrop"></div>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h3>سلة الطلبات</h3>
+            <button id="close-cart" class="cart-close">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div id="cart-items" class="cart-items-container">
+            <!-- Cart items will be dynamically inserted here -->
+        </div>
+        
+        <div id="order-details-summary" class="order-details-summary">
+            <!-- Order details will be dynamically inserted here -->
+        </div>
+        
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>المجموع:</span>
+                <span id="cart-total-price">0</span>
+                <span>ريال</span>
+            </div>
+            <button id="checkout-btn" class="checkout-btn" onclick="document.getElementById('order-form').scrollIntoView({behavior: 'smooth'})">
+                إتمام الطلب
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div id="category-nav" class="category-nav mb-4"></div>
+        <div id="menu-container"></div>
+    </main>
+
+    <script type="module">
+        import { menuData, restaurantInfo } from './menu-data.js';
+        
+        let cart = [];
+        let cartCount = 0;
+
+        function updateCartCount() {
+            cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = cartCount;
+        }
+
+        function updateCartDisplay() {
+            console.log('Updating cart display...');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const orderDetailsSummary = document.getElementById('order-details-summary');
+            const cartTotal = document.getElementById('cart-total-price');
+            
+            console.log('Cart items:', cart);
+            console.log('Cart items container:', cartItemsContainer);
+            console.log('Order details summary:', orderDetailsSummary);
+
+            // Clear existing content
+            if (cartItemsContainer) cartItemsContainer.innerHTML = '';
+            if (orderDetailsSummary) orderDetailsSummary.innerHTML = '';
+
+            if (cart.length === 0) {
+                console.log('Cart is empty');
+                if (cartItemsContainer) {
+                    cartItemsContainer.innerHTML = '<div class="empty-cart">السلة فارغة</div>';
+                }
+                if (cartTotal) cartTotal.textContent = '0';
+                return;
+            }
+
+            // Display cart items
+            cart.forEach((item, index) => {
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">${item.name}</h5>
+                            <p class="mb-0 text-muted">${item.price} ريال</p>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="btn-group me-2">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(${index}, -1)">-</button>
+                                <span class="btn btn-sm btn-outline-secondary disabled">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(${index}, 1)">+</button>
+                            </div>
+                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(cartItem);
+            });
+
+            // Update order details summary
+            let totalPrice = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                totalPrice += itemTotal;
+                
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item-summary';
+                orderItem.innerHTML = `
+                    <span>${item.name} × ${item.quantity}</span>
+                    <span>${itemTotal} ريال</span>
+                `;
+                orderDetailsSummary.appendChild(orderItem);
+            });
+
+            // Update total price
+            if (cartTotal) cartTotal.textContent = totalPrice;
+        }
+
+        function updateQuantity(index, change) {
+            const newQuantity = cart[index].quantity + change;
+            if (newQuantity > 0) {
+                cart[index].quantity = newQuantity;
+                updateCartCount();
+                updateCartDisplay();
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            updateCartDisplay();
+        }
+
+        function addToCart(item) {
+            console.log('Adding to cart:', item);
+            const existingItem = cart.find(i => i.id === item.id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: 1
+                });
+            }
+            
+            updateCartCount();
+            updateCartDisplay();
+            toggleCart(true);
+            showNotification('تمت إضافة العنصر إلى السلة');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function toggleCart(forceOpen = false) {
+            console.log('Toggling cart...');
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const cartBackdrop = document.getElementById('cart-backdrop');
+            
+            if (forceOpen || !cartSidebar.classList.contains('active')) {
+                cartSidebar.classList.add('active');
+                cartBackdrop.classList.add('active');
+                updateCartDisplay();
+            } else {
+                cartSidebar.classList.remove('active');
+                cartBackdrop.classList.remove('active');
+            }
+        }
+
+        // Close cart when clicking backdrop
+        document.getElementById('cart-backdrop').addEventListener('click', () => {
+            toggleCart();
+        });
+
+        // Close cart when clicking close button
+        document.getElementById('close-cart').addEventListener('click', () => {
+            toggleCart();
+        });
+
+        async function fetchMenu() {
+            try {
+                // Fetch menu data from the server
+                const response = await fetch('/api/menu');
+                const menuData = await response.json();
+                console.log('Fetched menu data:', menuData);
+                displayMenu(menuData);
+            } catch (error) {
+                console.error('Error loading menu:', error);
+                document.getElementById('menu-container').innerHTML = 
+                    '<div class="alert alert-danger">حدث خطأ في تحميل القائمة</div>';
+            }
+        }
+
+        function displayMenu(menuData) {
+            console.log('Displaying menu with data:', menuData);
+            const container = document.getElementById('menu-container');
+            const categoryNav = document.getElementById('category-nav');
+            let html = '';
+            let navHtml = '';
+
+            // Check if menuData has the expected structure
+            if (!menuData.categories || !menuData.items) {
+                console.error('Invalid menu data structure:', menuData);
+                container.innerHTML = '<div class="alert alert-danger">بيانات القائمة غير صالحة</div>';
+                return;
+            }
+
+            // Create dynamic category filter buttons
+            navHtml = `
+                <button class="category-btn active" onclick="window.showCategory('all')">
+                    الكل
+                </button>
+            `;
+
+            // Add filter button for each category
+            menuData.categories.forEach(category => {
+                navHtml += `
+                    <button class="category-btn" onclick="window.showCategory('${category.id}')">
+                        ${category.name}
+                    </button>
+                `;
+            });
+
+            // Create sections for items
+            menuData.categories.forEach(category => {
+                console.log('Processing category:', category);
+                
+                html += `
+                    <div id="category-${category.id}" class="category-section">
+                        <h2 class="category-title">${category.name}</h2>
+                        <div class="row g-4">
+                `;
+                
+                // Find items for this category by filtering items with matching categoryId
+                const categoryItems = menuData.items.filter(item => item.categoryId === category.id);
+                console.log(`Found ${categoryItems.length} items for category ${category.name} (${category.id})`);
+                
+                if (categoryItems.length > 0) {
+                    categoryItems.forEach(item => {
+                        html += `
+                            <div class="col-md-4 col-sm-6">
+                                <div class="menu-item">
+                                    <img src="${item.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${item.name}" 
+                                         onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDMwMCAyMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmOGY5ZmEiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9InN5c3RlbS11aSwgLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI0IiBmaWxsPSIjOWFhMGE2Ij7Yqdiq2KfYqjwvdGV4dD48L3N2Zz4='"">
+                                    <div class="menu-item-content">
+                                        <h5 class="menu-item-title">${item.name}</h5>
+                                        <p class="menu-item-description">${item.description || ''}</p>
+                                        <div class="menu-item-price">${item.price} ${item.currency || 'ريال'}</div>
+                                        <button class="add-to-cart-btn" onclick="window.addToCart({
+                                            id: '${item.id}',
+                                            name: '${item.name}',
+                                            price: ${item.price}
+                                        })">
+                                            <i class="bi bi-cart-plus"></i> إضافة للسلة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `
+                        <div class="col-12">
+                            <div class="alert alert-info">لا توجد عناصر في هذه الفئة</div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div></div>';
+            });
+
+            console.log('Category navigation HTML:', navHtml);
+            console.log('Menu container HTML:', html);
+            
+            if (categoryNav) {
+                categoryNav.innerHTML = navHtml;
+                console.log('Category navigation updated');
+            } else {
+                console.error('Category navigation element not found');
+            }
+            
+            if (container) {
+                container.innerHTML = html;
+                console.log('Menu container updated');
+            } else {
+                console.error('Menu container element not found');
+            }
+        }
+
+        function    showCategory(categoryId) {
+            console.log('Showing category:', categoryId);
+            
+            // Update active state of category buttons
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('onclick').includes(`'${categoryId}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Show/hide sections based on the selected category
+            document.querySelectorAll('.category-section').forEach(section => {
+                if (categoryId === 'all') {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = section.id === `category-${categoryId}` ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Load menu when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM content loaded');
+            fetchMenu();
+            
+            // Initialize cart
+            console.log('Initializing cart');
+            updateCartCount();
+            updateCartDisplay();
+            
+            // Add event listeners for cart functionality
+            const cartIcon = document.getElementById('cart-icon');
+            const closeCart = document.getElementById('close-cart');
+            const cartBackdrop = document.getElementById('cart-backdrop');
+            const submitOrder = document.getElementById('submit-order');
+            
+            if (cartIcon) cartIcon.addEventListener('click', toggleCart);
+            if (closeCart) closeCart.addEventListener('click', toggleCart);
+            if (cartBackdrop) cartBackdrop.addEventListener('click', toggleCart);
+            if (submitOrder) submitOrder.addEventListener('click', submitOrder);
+            
+            console.log('Cart initialization complete');
+
+            // Make functions available globally
+            window.addToCart = addToCart;
+            window.showCategory = showCategory;
+            window.updateQuantity = updateQuantity;
+            window.removeFromCart = removeFromCart;
+            
+            // Test cart functionality
+            console.log('Testing cart functionality...');
+            
+            // Add a test item to the cart
+            const testItem = {
+                id: 'test_item_1',
+                name: 'سمكة فانيلو',
+                price: 20.00,
+                currency: 'ILS',
+                quantity: 1
+            };
+            
+            console.log('Adding test item:', testItem);
+            cart.push(testItem);
+            updateCartDisplay();
+            updateCartCount();
+            
+            // Log cart state
+            console.log('Current cart state:', cart);
+            console.log('Cart items container:', document.getElementById('cart-items'));
+            console.log('Order details summary:', document.getElementById('order-details-summary'));
+            
+            // Open cart to verify display
+            console.log('Opening cart to verify display...');
+            toggleCart();
+        });
+    </script>
+</body>
+</html>

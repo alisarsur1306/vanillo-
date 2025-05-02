@@ -1,0 +1,56 @@
+Vanillo Project Backup Info
+Date: Current
+Status: Stable
+
+Main Files:
+1. server.js - Basic Express server
+   - Serves menu data via GET /api/menu
+   - Uses public directory for static files
+   - CORS enabled
+   - Basic error handling
+
+2. orders.html - Order Management Interface
+   - Bootstrap 5 styling
+   - RTL support for Arabic
+   - Menu display functionality
+   - Basic cart management
+   - Order submission capability
+
+3. admin.html - Admin Panel
+   - Menu item management
+   - Add/Edit/Delete functionality
+   - Category management
+   - Image URL support
+   - Tailwind CSS styling
+
+4. menu-data.json - Data Storage
+   - Structured menu categories
+   - Item details (name, price, description)
+   - Arabic and English support
+   - Image URLs
+
+5. package.json - Dependencies
+   - express
+   - cors
+   - Basic npm scripts
+
+Directory Structure:
+/
+├── server.js
+├── orders.html
+├── admin.html
+├── index.html
+├── menu-data.json
+├── package.json
+├── public/
+└── node_modules/
+
+Current Features:
+- Menu display
+- Order management
+- Admin panel
+- Multi-language support (Arabic/English)
+- Responsive design
+- Basic error handling
+
+Note: This represents the basic, stable version of the project with core functionality intact. 

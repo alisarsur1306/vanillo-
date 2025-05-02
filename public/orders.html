@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الطلبات - فانيلو كفرقاسم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="custom.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C4DFF',
+                        secondary: '#FF80AB',
+                        accent: '#B388FF',
+                        'primary-light': '#E8E0FF',
+                        'primary-dark': '#5C35CC'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #fafafa;
+        }
+        .order-card {
+            transition: all 0.3s ease;
+            border-width: 2px;
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .priority-urgent {
+            border-color: #EF4444;
+        }
+        .priority-high {
+            border-color: #F59E0B;
+        }
+        .priority-normal {
+            border-color: #10B981;
+        }
+        .priority-low {
+            border-color: #6B7280;
+        }
+        .kanban-column {
+            min-height: calc(100vh - 12rem);
+            transition: all 0.3s ease;
+        }
+        .kanban-column.collapsed {
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+        }
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        .column-header:hover {
+            opacity: 0.8;
+        }
+        .collapse-icon {
+            transition: transform 0.3s ease;
+        }
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .order-number {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .order-datetime {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.25rem;
+        }
+        .order-date {
+            color: #4B5563;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .order-time {
+            color: #6B7280;
+            font-size: 0.9rem;
+        }
+        .order-details {
+            margin-bottom: 1rem;
+        }
+        .customer-info {
+            margin-bottom: 0.5rem;
+        }
+        .customer-info strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .order-items {
+            margin-bottom: 0.5rem;
+        }
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .item-quantity {
+            font-weight: 900;
+            color: #7C4DFF;
+            min-width: 2rem;
+            font-size: 1.1rem;
+            background: #E8E0FF;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .item-name {
+            flex: 1;
+        }
+        .item-price {
+            font-weight: 500;
+            color: #059669;
+        }
+        .order-pricing {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 0.375rem;
+        }
+        .pricing-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            color: #4B5563;
+        }
+        .pricing-row.total {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+            font-weight: bold;
+            color: #111827;
+            font-size: 1.1rem;
+        }
+        .item-notes {
+            color: #6B7280;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        .countdown {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f3f4f6;
+            border-radius: 0.375rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .countdown-label {
+            color: #4B5563;
+            font-size: 0.9rem;
+        }
+        .countdown-time {
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #059669;
+        }
+        .countdown-time.warning {
+            color: #DC2626;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .order-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+        .order-actions button {
+            transition: all 0.2s ease;
+        }
+        .order-actions button:hover {
+            transform: translateY(-1px);
+        }
+        .notification-badge {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: #7C4DFF;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+        .notification-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .notification-badge i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Notification Badge -->
+    <div id="notificationBadge" class="notification-badge hidden">
+        <i class="fas fa-bell"></i>
+        <span>طلبات جديدة</span>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-black text-white py-6 px-4 sm:px-6 lg:px-8 mb-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">إدارة الطلبات</h1>
+                <div class="flex gap-4">
+                    <!-- Show Older Orders Button -->
+                    <button id="showOlderOrders" class="bg-white text-black px-4 py-2 rounded-lg hover:bg-gray-100">
+                        <i class="fas fa-history"></i>
+                        <span>عرض الطلبات السابقة</span>
+                    </button>
+                    <!-- Time Filter -->
+                    <select id="timeFilter" class="bg-white text-black px-4 py-2 rounded-lg">
+                        <option value="all">كل الطلبات</option>
+                        <option value="asap">طلبات فورية</option>
+                        <option value="scheduled">طلبات مجدولة</option>
+                    </select>
+                    <!-- Sort Options -->
+                    <select id="sortOption" class="bg-white text-black px-4 py-2 rounded-lg">
+                        <option value="priority">حسب الأولوية</option>
+                        <option value="timeAsc">الوقت (تصاعدي)</option>
+                        <option value="timeDesc">الوقت (تنازلي)</option>
+                        <option value="amountAsc">المبلغ (تصاعدي)</option>
+                        <option value="amountDesc">المبلغ (تنازلي)</option>
+                        <option value="newest">الأحدث</option>
+                        <option value="oldest">الأقدم</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Priority Legend -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div class="bg-white rounded-lg p-4 flex items-center justify-between">
+            <h2 class="font-bold">مؤشر الأولوية:</h2>
+            <div class="flex gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-red-500 rounded-full"></div>
+                    <span>عاجل جداً</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-amber-500 rounded-full"></div>
+                    <span>عاجل</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-emerald-500 rounded-full"></div>
+                    <span>عادي</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-gray-500 rounded-full"></div>
+                    <span>منخفض</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Pending Orders -->
+            <div class="bg-gray-100 rounded-xl p-4">
+                <h2 class="text-xl font-bold mb-4">
+                    <div class="order-status">
+                        <span class="status-icon status-pending"></span>
+                        <span>قيد الانتظار</span>
+                    </div>
+                </h2>
+                <div id="pendingOrders" class="space-y-4 kanban-column"></div>
+            </div>
+
+            <!-- Preparing Orders -->
+            <div class="bg-gray-100 rounded-xl p-4">
+                <h2 class="text-xl font-bold mb-4">
+                    <div class="order-status">
+                        <span class="status-icon status-preparing"></span>
+                        <span>قيد التحضير</span>
+                    </div>
+                </h2>
+                <div id="preparingOrders" class="space-y-4 kanban-column"></div>
+            </div>
+
+            <!-- Ready Orders -->
+            <div class="bg-gray-100 rounded-xl p-4">
+                <h2 class="text-xl font-bold mb-4">
+                    <div class="order-status">
+                        <span class="status-icon status-ready"></span>
+                        <span>جاهز للتوصيل</span>
+                    </div>
+                </h2>
+                <div id="readyOrders" class="space-y-4 kanban-column"></div>
+            </div>
+
+            <!-- Today's Delivered Orders -->
+            <div class="bg-gray-100 rounded-xl p-4">
+                <div class="column-header" onclick="toggleColumn('deliveredOrders')">
+                    <h2 class="text-xl font-bold">
+                        <div class="order-status">
+                            <span class="status-icon status-delivered"></span>
+                            <span>طلبات اليوم المكتملة</span>
+                        </div>
+                    </h2>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+                <div id="deliveredOrders" class="space-y-4 kanban-column"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Preparation Time Modal -->
+    <div id="prepTimeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="bg-white rounded-xl p-6 max-w-md mx-auto mt-20">
+            <h3 class="text-xl font-bold mb-4">تحديد وقت التحضير</h3>
+            <div id="timeButtons" class="grid grid-cols-3 gap-2 mb-4">
+                <!-- Time buttons will be added here dynamically -->
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closePrepTimeModal()" 
+                        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Older Orders Modal -->
+    <div id="olderOrdersModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50">
+        <div class="bg-white rounded-xl p-6 max-w-4xl mx-auto mt-20 max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">الطلبات السابقة</h3>
+                <button onclick="closeOlderOrdersModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="olderOrdersList" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="fixed top-4 right-4 z-50"></div>
+
+    <script>
+        let notificationPermission = false;
+        let lastOrderCount = 0;
+        let notificationBadge = document.getElementById('notificationBadge');
+        let notificationAudio = null;
+        let audioInitialized = false;
+        let audioInitAttempts = 0;
+        const MAX_AUDIO_INIT_ATTEMPTS = 3;
+
+        // Create a button to enable audio
+        function createAudioEnableButton() {
+            const button = document.createElement('button');
+            button.id = 'enableAudioBtn';
+            button.className = 'fixed top-4 left-4 bg-primary text-white px-4 py-2 rounded-lg z-50 hover:bg-primary-dark transition-colors';
+            button.innerHTML = '<i class="fas fa-volume-up mr-2"></i>تفعيل التنبيهات الصوتية';
+            button.onclick = async () => {
+                try {
+                    await initAudioSystem();
+                    if (audioInitialized) {
+                        button.remove();
+                        showToast('تم تفعيل التنبيهات الصوتية بنجاح', 'success');
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize audio after user interaction:', error);
+                    showToast('فشل تفعيل التنبيهات الصوتية', 'error');
+                }
+            };
+            document.body.appendChild(button);
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 
+                'bg-blue-500'
+            }`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Remove toast after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Initialize audio system
+        async function initAudioSystem() {
+            try {
+                if (!notificationAudio) {
+                    notificationAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                    notificationAudio.volume = 1.0;
+                }
+                
+                // Try to play and immediately pause to initialize
+                await notificationAudio.play();
+                notificationAudio.pause();
+                notificationAudio.currentTime = 0;
+                
+                audioInitialized = true;
+                console.log('Audio system initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize audio system:', error);
+                
+                // Check if it's the NotAllowedError
+                if (error.name === 'NotAllowedError') {
+                    console.log('Audio requires user interaction. Showing enable button.');
+                    createAudioEnableButton();
+                }
+                
+                return false;
+            }
+        }
+
+        // Play notification sound
+        async function playNotificationSound() {
+            if (!audioInitialized) {
+                console.log('Audio not initialized yet');
+                return;
+            }
+
+            try {
+                notificationAudio.currentTime = 0;
+                await notificationAudio.play();
+                console.log('Notification sound played successfully');
+            } catch (error) {
+                console.error('Failed to play notification sound:', error);
+                
+                // If it's a NotAllowedError, show the enable button
+                if (error.name === 'NotAllowedError') {
+                    audioInitialized = false;
+                    createAudioEnableButton();
+                }
+            }
+        }
+
+        // Show notification
+        async function showNotification(order, isNewOrder = false) {
+            if (!notificationPermission) return;
+
+            // Only play sound for new orders
+            if (isNewOrder) {
+                await playNotificationSound();
+            }
+            
+            showNotificationBadge();
+
+            const notification = new Notification('طلب جديد! 🍦', {
+                body: `طلب #${order.OrderID || order.id} من ${order.customer.name}`,
+                icon: 'https://static.wixstatic.com/media/6460ca_5d280967adee41e7b349dbfb05606601~mv2.png/v1/fill/w_280,h_137,al_c,lg_1,q_85,enc_avif,quality_auto/640d9c48502f74732032b896bf93fabe1638450070.png',
+                badge: 'https://static.wixstatic.com/media/6460ca_5d280967adee41e7b349dbfb05606601~mv2.png/v1/fill/w_280,h_137,al_c,lg_1,q_85,enc_avif,quality_auto/640d9c48502f74732032b896bf93fabe1638450070.png',
+                tag: `order-${order.OrderID || order.id}`,
+                renotify: true,
+                silent: true // We're handling the sound ourselves
+            });
+
+            notification.onclick = function() {
+                window.focus();
+                this.close();
+            };
+        }
+
+        // Show notification badge
+        function showNotificationBadge() {
+            if (notificationBadge) {
+                notificationBadge.classList.remove('hidden');
+                notificationBadge.style.animation = 'pulse 1s infinite';
+            }
+        }
+
+        // Hide notification badge
+        function hideNotificationBadge() {
+            if (notificationBadge) {
+                notificationBadge.classList.add('hidden');
+                notificationBadge.style.animation = '';
+            }
+        }
+
+        // Initialize notifications
+        document.addEventListener('DOMContentLoaded', () => {
+            // Request notification permission
+            Notification.requestPermission().then(permission => {
+                notificationPermission = permission === 'granted';
+                console.log('Notification permission:', permission);
+            });
+
+            // Try to initialize audio system
+            initAudioSystem().then(initialized => {
+                if (!initialized) {
+                    console.log('Audio initialization deferred until user interaction');
+                }
+            });
+        });
+
+        let orders = {};
+        let activeCountdowns = new Map();
+        let ws;
+        let olderOrders = {};
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            ws = new WebSocket(`ws://${window.location.hostname}:3001/ws`);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                // Request orders immediately after connection is established
+                ws.send(JSON.stringify({ type: 'getOrders' }));
+            };
+            
+            ws.onmessage = (event) => {
+                console.log('Raw WebSocket message received:', event.data);
+                handleWebSocketMessage(event.data);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                // Try to reconnect after 5 seconds
+                setTimeout(initWebSocket, 5000);
+            };
+        }
+
+        // Handle WebSocket messages
+        function handleWebSocketMessage(event) {
+            try {
+                const message = typeof event === 'string' ? JSON.parse(event) : event;
+                console.log('Parsed WebSocket message:', message);
+                
+                switch (message.type) {
+                    case 'orders':
+                        if (Array.isArray(message.data)) {
+                            orders = message.data.reduce((acc, order) => {
+                                acc[order.OrderID] = order;
+                                return acc;
+                            }, {});
+                            renderOrders();
+                            // Start countdowns for orders in preparation
+                            Object.values(orders).forEach(order => {
+                                if (order.status === 'preparing' && order.prepTime > 0 && order.countdownStartTime) {
+                                    startCountdown(order.OrderID);
+                                }
+                            });
+                        }
+                        break;
+                        
+                    case 'newOrder':
+                        const newOrder = message.data;
+                        orders[newOrder.OrderID] = newOrder;
+                        // Play notification sound only for new pending orders
+                        if (newOrder.status === 'pending') {
+                            showNotification(newOrder, true);
+                        }
+                        renderOrders();
+                        break;
+                        
+                    case 'order_update':
+                        const updatedOrder = message.data;
+                        // Update the order in our local state
+                        orders[updatedOrder.OrderID] = updatedOrder;
+                        
+                        // Start countdown if order is now preparing
+                        if (updatedOrder.status === 'preparing' && updatedOrder.prepTime > 0) {
+                            startCountdown(updatedOrder.OrderID);
+                        }
+                        
+                        renderOrders();
+                        break;
+                        
+                    case 'order_deleted':
+                        const deletedOrderId = message.orderId;
+                        delete orders[deletedOrderId];
+                        renderOrders();
+                        break;
+                }
+            } catch (error) {
+                console.error('Error handling WebSocket message:', error);
+                console.error('Raw message:', event);
+            }
+        }
+
+        // Load orders from API and localStorage
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders');
+                if (response.ok) {
+                    const apiOrders = await response.json();
+                    orders = apiOrders.reduce((acc, order) => {
+                        acc[order.OrderID] = order;
+                        return acc;
+                    }, {});
+                    renderOrders();
+                    // Start countdowns for orders in preparation
+                    Object.values(orders).forEach(order => {
+                        if (order.status === 'preparing' && order.prepTime > 0 && order.countdownStartTime) {
+                            startCountdown(order.OrderID);
+                        }
+                    });
+                } else {
+                    throw new Error('Failed to fetch orders');
+                }
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        // Start or update countdown for an order
+        function startCountdown(orderId) {
+            const order = orders[orderId];
+            if (!order || !order.countdownStartTime || !order.prepTime) return;
+
+            // Clear existing countdown if any
+            if (activeCountdowns.has(orderId)) {
+                clearInterval(activeCountdowns.get(orderId).interval);
+            }
+
+            function updateDisplay() {
+                const countdownElement = document.querySelector(`#order-${orderId} .countdown-time`);
+                if (!countdownElement) return;
+
+                const now = Date.now();
+                const startTime = new Date(order.countdownStartTime).getTime();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                const totalSeconds = order.prepTime * 60;
+                const timeLeft = Math.max(0, totalSeconds - elapsedSeconds);
+
+                if (timeLeft === 0) {
+                    clearInterval(interval);
+                    activeCountdowns.delete(orderId);
+                    countdownElement.textContent = 'اكتمل';
+                    countdownElement.classList.add('text-green-500');
+                    // Update order status to ready
+                    updateOrderStatus(orderId, 'ready');
+                    return;
+                }
+
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Add warning class if less than 5 minutes remaining
+                if (timeLeft <= 300) { // 5 minutes = 300 seconds
+                    countdownElement.classList.add('warning');
+                } else {
+                    countdownElement.classList.remove('warning');
+                }
+            }
+
+            // Initial display update
+            updateDisplay();
+
+            // Start countdown interval
+            const interval = setInterval(updateDisplay, 1000);
+
+            // Store countdown info
+            activeCountdowns.set(orderId, {
+                interval,
+                lastSyncTime: Date.now()
+            });
+        }
+
+        // Sync a specific order with the server
+        async function syncOrder(orderId) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}`);
+                if (response.ok) {
+                    const order = await response.json();
+                    orders[orderId] = order;
+                    renderOrders();
+                }
+            } catch (error) {
+                console.error('Error syncing order:', error);
+            }
+        }
+
+        // Function to check if a date is today
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        // Function to show older orders modal
+        async function showOlderOrdersModal() {
+            console.log('Opening older orders modal...');
+            const modal = document.getElementById('olderOrdersModal');
+            const olderOrdersList = document.getElementById('olderOrdersList');
+            
+            try {
+                // Fetch older orders
+                const response = await fetch('/api/orders/history');
+                if (response.ok) {
+                    const data = await response.json();
+                    olderOrders = data.reduce((acc, order) => {
+                        acc[order.OrderID] = order;
+                        return acc;
+                    }, {});
+                    
+                    // Sort older orders by timestamp (newest first)
+                    const sortedOrders = Object.values(olderOrders).sort((a, b) => {
+                        return new Date(b.timestamp) - new Date(a.timestamp);
+                    });
+                    
+                    // Render older orders
+                    olderOrdersList.innerHTML = '';
+                    sortedOrders.forEach(order => {
+                        const card = createOrderCard(order);
+                        olderOrdersList.appendChild(card);
+                    });
+                    
+                    // Show modal
+                    modal.classList.remove('hidden');
+                } else {
+                    console.error('Failed to fetch older orders:', response.status);
+                }
+            } catch (error) {
+                console.error('Error fetching older orders:', error);
+            }
+        }
+
+        // Function to close older orders modal
+        function closeOlderOrdersModal() {
+            console.log('Closing older orders modal...');
+            const modal = document.getElementById('olderOrdersModal');
+            modal.classList.add('hidden');
+        }
+
+        // Modify the existing renderOrders function
+        function renderOrders() {
+            // Clear existing orders
+            document.getElementById('pendingOrders').innerHTML = '';
+            document.getElementById('preparingOrders').innerHTML = '';
+            document.getElementById('readyOrders').innerHTML = '';
+            document.getElementById('deliveredOrders').innerHTML = '';
+
+            // Get current time for waiting time calculations
+            const now = Date.now();
+
+            // Sort orders by priority and timestamp
+            const sortedOrders = Object.values(orders).sort((a, b) => {
+                // For delivered orders, sort by timestamp (newest first)
+                if (a.status === 'delivered' && b.status === 'delivered') {
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                }
+                
+                // For other orders, sort by priority
+                const waitingTimeA = a.status === 'pending' ? (now - new Date(a.timestamp).getTime()) / 60000 : 0;
+                const waitingTimeB = b.status === 'pending' ? (now - new Date(b.timestamp).getTime()) / 60000 : 0;
+                return calculatePriorityScore(b, waitingTimeB) - calculatePriorityScore(a, waitingTimeA);
+            });
+
+            // Render each order in the appropriate column
+            sortedOrders.forEach(order => {
+                const card = createOrderCard(order);
+                const waitingTime = order.status === 'pending' ? (now - new Date(order.timestamp).getTime()) / 60000 : 0;
+                const priorityClass = getPriorityClass(calculatePriorityScore(order, waitingTime));
+                card.classList.add(priorityClass);
+
+                switch (order.status) {
+                    case 'pending':
+                        document.getElementById('pendingOrders').appendChild(card);
+                        break;
+                    case 'preparing':
+                        document.getElementById('preparingOrders').appendChild(card);
+                        break;
+                    case 'ready':
+                        document.getElementById('readyOrders').appendChild(card);
+                        break;
+                    case 'delivered':
+                        // Only show today's delivered orders in the main view
+                        if (isToday(new Date(order.timestamp))) {
+                            document.getElementById('deliveredOrders').appendChild(card);
+                        }
+                        break;
+                }
+            });
+        }
+
+        // Calculate priority score for an order
+        function calculatePriorityScore(order, waitingTime) {
+            let score = 0;
+
+            // Base score based on status
+            switch (order.status) {
+                case 'pending': score += 1000; break;
+                case 'preparing': score += 800; break;
+                case 'ready': score += 600; break;
+                case 'delivered': score += 400; break;
+            }
+
+            // Add score for delivery type
+            if (order.customer.deliveryType === 'asap') {
+                score += 200;
+            }
+
+            // Add score for waiting time (1 point per minute)
+            score += waitingTime;
+
+            // Add score for order total (0.1 point per shekel)
+            score += order.total * 0.1;
+
+            return score;
+        }
+
+        // Get priority class based on score
+        function getPriorityClass(score) {
+            if (score >= 1200) return 'priority-urgent';
+            if (score >= 1000) return 'priority-high';
+            if (score >= 800) return 'priority-normal';
+            return 'priority-low';
+        }
+
+        // Format date for display
+        function formatDate(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Format time for display
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        // Handle drag start event
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.target.classList.add('opacity-50');
+        }
+
+        // Handle drag end event
+        function handleDragEnd(e) {
+            e.target.classList.remove('opacity-50');
+        }
+
+        // Function to create an order card
+        function createOrderCard(order) {
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            card.id = `order-${order.OrderID}`;
+            card.draggable = true;
+            
+            // Calculate pricing
+            const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const deliveryFee = order.deliveryType === 'delivery' ? 15 : 0;
+            const total = subtotal + deliveryFee;
+            
+            // Format the order number
+            const orderNumberDisplay = order.orderNumber || `#${order.OrderID}`;
+            
+            // Calculate time left if there's a countdown
+            let timeLeftDisplay = '';
+            let showCountdown = false;
+            if (order.status === 'preparing' && order.countdownStartTime && order.prepTime) {
+                const now = Date.now();
+                const startTime = new Date(order.countdownStartTime).getTime();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                const totalSeconds = order.prepTime * 60;
+                const timeLeft = Math.max(0, totalSeconds - elapsedSeconds);
+                
+                if (timeLeft > 0) {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timeLeftDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    showCountdown = true;
+                } else {
+                    timeLeftDisplay = 'اكتمل';
+                    showCountdown = true;
+                }
+            }
+            
+            card.innerHTML = `
+                <div class="order-header">
+                    <div class="flex items-center gap-2">
+                        <span class="status-icon status-${order.status}"></span>
+                        <span class="order-number">${orderNumberDisplay}</span>
+                    </div>
+                    <div class="order-datetime">
+                        <span class="order-date">${formatDate(order.timestamp)}</span>
+                        <span class="order-time">${formatTime(order.timestamp)}</span>
+                    </div>
+                </div>
+                <div class="order-details">
+                    <div class="customer-info">
+                        <strong>${order.customer?.name || 'Unknown Customer'}</strong>
+                        <span>${order.customer?.phone || 'No phone'}</span>
+                    </div>
+                    <div class="order-items">
+                        ${(order.items || []).map(item => `
+                            <div class="order-item">
+                                <span class="item-quantity">${item.quantity}x</span>
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-price">₪${(item.price * item.quantity).toFixed(2)}</span>
+                                ${item.notes ? `<span class="item-notes">${item.notes}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-pricing">
+                        <div class="pricing-row">
+                            <span>Subtotal:</span>
+                            <span>₪${subtotal.toFixed(2)}</span>
+                        </div>
+                        ${deliveryFee > 0 ? `
+                            <div class="pricing-row">
+                                <span>Delivery Fee:</span>
+                                <span>₪${deliveryFee.toFixed(2)}</span>
+                            </div>
+                        ` : ''}
+                        <div class="pricing-row total">
+                            <span>Total:</span>
+                            <span>₪${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    ${showCountdown ? `
+                        <div class="countdown">
+                            <span class="countdown-label">الوقت المتبقي:</span>
+                            <span class="countdown-time ${timeLeftDisplay === 'اكتمل' ? 'text-green-500' : ''}">${timeLeftDisplay}</span>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="order-actions">
+                    ${getActionButtons(order)}
+                </div>
+            `;
+            
+            // Add drag event listeners
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            
+            return card;
+        }
+
+        // Function to edit an order
+        function editOrder(orderId) {
+            // Find the order in the orders array
+            const order = orders.find(o => o.OrderID === orderId);
+            if (!order) return;
+            
+            // Show the edit modal with the order data
+            showEditModal(order);
+        }
+
+        // Function to update order counts in column headers
+        function updateOrderCounts() {
+            const columns = {
+                'pendingOrders': 'قيد الانتظار',
+                'preparingOrders': 'قيد التحضير',
+                'readyOrders': 'جاهز للتوصيل',
+                'deliveredOrders': 'تم التوصيل'
+            };
+
+            for (const [columnId, title] of Object.entries(columns)) {
+                const column = document.getElementById(columnId);
+                const count = column.children.length;
+                const header = column.previousElementSibling;
+                header.textContent = `${title} (${count})`;
+            }
+        }
+
+        // Function to delete an order
+        function deleteOrder(orderId) {
+            if (!confirm('Are you sure you want to delete this order?')) return;
+            
+            fetch(`/api/orders/${orderId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the order card from the DOM
+                    const card = document.getElementById(`order-${orderId}`);
+                    if (card) {
+                        card.remove();
+                        updateOrderCounts();
+                    }
+                } else {
+                    alert('Failed to delete order: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting order:', error);
+                alert('Failed to delete order');
+            });
+        }
+
+        // Function to show edit modal
+        function showEditModal(order) {
+            const modal = document.getElementById('editOrderModal');
+            const form = document.getElementById('editOrderForm');
+            
+            // Set form values
+            form.elements['orderId'].value = order.OrderID;
+            form.elements['status'].value = order.status;
+            form.elements['prepTime'].value = order.prepTime || '';
+            
+            // Show the modal
+            modal.style.display = 'block';
+        }
+
+        // Function to handle edit form submission
+        function handleEditSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const orderId = form.elements['orderId'].value;
+            const status = form.elements['status'].value;
+            const prepTime = form.elements['prepTime'].value;
+            
+            // Prepare the update data
+            const updateData = {
+                status: status
+            };
+            
+            // Only include prepTime if it's provided
+            if (prepTime) {
+                updateData.prepTime = parseInt(prepTime);
+            }
+            
+            // Send the update request
+            fetch(`/api/orders/${orderId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close the modal
+                    document.getElementById('editOrderModal').style.display = 'none';
+                    
+                    // The order card will be updated via WebSocket
+                } else {
+                    alert('Failed to update order: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error updating order:', error);
+                alert('Failed to update order');
+            });
+        }
+
+        // Open preparation time modal
+        function openPrepTimeModal(orderId) {
+            const modal = document.getElementById('prepTimeModal');
+            const timeButtonsContainer = document.getElementById('timeButtons');
+            modal.classList.remove('hidden');
+            
+            // Clear existing buttons
+            timeButtonsContainer.innerHTML = '';
+            
+            // Create time buttons (5 to 45 minutes in 5-minute increments)
+            for (let i = 1; i <= 9; i++) {
+                const minutes = i * 5;
+                const button = document.createElement('button');
+                button.className = 'time-btn px-4 py-2 rounded-lg bg-gray-100 hover:bg-primary hover:text-white transition-colors';
+                button.textContent = `${minutes} دقيقة`;
+                button.dataset.minutes = minutes;
+                button.onclick = () => handlePrepTimeSelection(orderId, minutes);
+                timeButtonsContainer.appendChild(button);
+            }
+        }
+
+        // Close preparation time modal
+        function closePrepTimeModal() {
+            document.getElementById('prepTimeModal').classList.add('hidden');
+        }
+
+        // Handle preparation time selection
+        async function handlePrepTimeSelection(orderId, minutes) {
+            if (orders[orderId]) {
+                try {
+                    console.log('Updating order status:', { orderId, minutes });
+                    
+                    // Update order status to preparing
+                    const response = await fetch(`/api/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            status: 'preparing',
+                            prepTime: minutes,
+                            countdownStartTime: new Date().toISOString() // Add countdown start time
+                        })
+                    });
+
+                    const result = await response.json();
+                    console.log('Update response:', result);
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Failed to update order status');
+                    }
+
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to update order status');
+                    }
+
+                    // Update local state with the returned order data
+                    orders[orderId] = result.order;
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                    
+                    // Start countdown immediately
+                    startCountdown(orderId);
+                    
+                    // Close modal and refresh display
+                    closePrepTimeModal();
+                    renderOrders();
+                    
+                    // Show success notification
+                    showNotification(result.order);
+                } catch (error) {
+                    console.error('Error updating order:', error);
+                    showNotification(`حدث خطأ: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Get action buttons based on order status
+        function getActionButtons(order) {
+            switch (order.status) {
+                case 'pending':
+                    return `
+                        <button onclick="openPrepTimeModal('${order.OrderID}')" 
+                                class="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-900">
+                            تحديد وقت التحضير
+                        </button>
+                    `;
+                case 'preparing':
+                    return `
+                        <button onclick="updateOrderStatus('${order.OrderID}', 'ready')" 
+                                class="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600">
+                            تم التحضير
+                        </button>
+                    `;
+                case 'ready':
+                    return `
+                        <button onclick="updateOrderStatus('${order.OrderID}', 'delivered')" 
+                                class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600">
+                            تم التوصيل
+                        </button>
+                    `;
+                case 'delivered':
+                    return `
+                        <button onclick="deleteOrder('${order.OrderID}')" 
+                                class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600">
+                            حذف
+                        </button>
+                    `;
+                default:
+                    return '';
+            }
+        }
+
+        // Update order status with API support
+        async function updateOrderStatus(orderId, status) {
+            if (orders[orderId]) {
+                try {
+                    // Try to update via API first
+                    const response = await fetch(`/api/orders/${orderId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to update order status via API');
+                    }
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to update order status');
+                    }
+
+                    // If API update successful, also update localStorage
+                    orders[orderId] = result.order;
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                } catch (error) {
+                    console.error('Error updating order status:', error);
+                    // Fallback to localStorage only
+                    orders[orderId].status = status;
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                }
+                
+                renderOrders();
+            }
+        }
+
+        // Function to toggle column collapse
+        function toggleColumn(columnId) {
+            // Only allow collapsing for delivered orders
+            if (columnId !== 'deliveredOrders') return;
+            
+            const column = document.getElementById(columnId);
+            const header = column.previousElementSibling;
+            const icon = header.querySelector('.collapse-icon');
+            
+            column.classList.toggle('collapsed');
+            icon.classList.toggle('collapsed');
+            
+            // Save collapse state to localStorage
+            const collapseState = JSON.parse(localStorage.getItem('columnCollapseState') || '{}');
+            collapseState[columnId] = column.classList.contains('collapsed');
+            localStorage.setItem('columnCollapseState', JSON.stringify(collapseState));
+        }
+
+        // Function to restore column collapse states
+        function restoreColumnStates() {
+            const collapseState = JSON.parse(localStorage.getItem('columnCollapseState') || '{}');
+            
+            // Only restore state for delivered orders
+            if (collapseState['deliveredOrders']) {
+                const column = document.getElementById('deliveredOrders');
+                const header = column.previousElementSibling;
+                const icon = header.querySelector('.collapse-icon');
+                
+                if (collapseState['deliveredOrders']) {
+                    column.classList.add('collapsed');
+                    icon.classList.add('collapsed');
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing page...');
+            // Load orders first, then initialize WebSocket
+            loadOrders();
+            initWebSocket();
+            
+            // Restore column collapse states
+            restoreColumnStates();
+            
+            // Add event listeners for filters and older orders button
+            document.getElementById('timeFilter').addEventListener('change', loadOrders);
+            document.getElementById('sortOption').addEventListener('change', loadOrders);
+            
+            // Add click handler for older orders button
+            const olderOrdersBtn = document.getElementById('showOlderOrders');
+            if (olderOrdersBtn) {
+                console.log('Adding click handler to older orders button');
+                olderOrdersBtn.addEventListener('click', () => {
+                    console.log('Older orders button clicked');
+                    showOlderOrdersModal();
+                });
+            } else {
+                console.error('Older orders button not found in DOM');
+            }
+
+            // Sync active countdowns every 30 seconds
+            setInterval(() => {
+                activeCountdowns.forEach((countdown, orderId) => {
+                    if (Date.now() - countdown.lastSyncTime >= 30000) {
+                        syncOrder(orderId);
+                        countdown.lastSyncTime = Date.now();
+                    }
+                });
+            }, 30000);
+        });
+    </script>
+</body>
+</html> 
