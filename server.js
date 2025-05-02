@@ -33,7 +33,10 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none'
+    }
 }));
 
 // Create HTTP server
@@ -43,7 +46,10 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? 'https://vanillo.onrender.com' : '*',
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
@@ -89,7 +95,7 @@ app.get('/api/check-auth', (req, res) => {
 // Create orders directory if it doesn't exist
 const ordersDir = path.join(__dirname, 'orders');
 if (!fs.existsSync(ordersDir)) {
-    fs.mkdirSync(ordersDir);
+    fs.mkdirSync(ordersDir, { recursive: true });
 }
 
 // WebSocket connection handling
@@ -779,7 +785,7 @@ app.get('/admin', (req, res) => {
 // Modify the server start code to use the HTTP server
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    console.log(`Open your browser and navigate to http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Call migration function when server starts
