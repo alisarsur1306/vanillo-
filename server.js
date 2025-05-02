@@ -61,14 +61,18 @@ const requireAuth = (req, res, next) => {
 // Authentication routes
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    const user = USERS[username];
     
-    if (user && user.password === password) {
+    // Check both admin and orders accounts
+    const adminUser = USERS.admin;
+    const ordersUser = USERS.orders;
+    
+    if ((adminUser.username === username && adminUser.password === password) ||
+        (ordersUser.username === username && ordersUser.password === password)) {
         req.session.user = {
-            username: user.username,
-            role: user.role
+            username: username,
+            role: username === adminUser.username ? 'admin' : 'orders'
         };
-        res.json({ success: true, role: user.role });
+        res.json({ success: true, role: req.session.user.role });
     } else {
         res.status(401).json({ error: 'Invalid credentials' });
     }
