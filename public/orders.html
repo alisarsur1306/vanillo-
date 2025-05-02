@@ -1456,6 +1456,10 @@
                 
                 if (data.success) {
                     document.getElementById('loginOverlay').style.display = 'none';
+                    // Initialize WebSocket after successful login
+                    initWebSocket();
+                    // Load initial orders
+                    loadOrders();
                 } else {
                     errorMessage.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
                     errorMessage.style.display = 'block';
