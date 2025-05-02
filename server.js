@@ -12,19 +12,14 @@ const { menuData, restaurantInfo } = require('./menu-data.js');
 // Authentication configuration
 const USERS = {
     admin: {
-        username: 'admin',
-        password: 'admin123',
+        username: 'Ali',
+        password: 'Sewar25021995!',
         role: 'admin'
     },
     orders: {
-        username: 'orders',
-        password: 'orders123',
+        username: 'Ali',
+        password: 'Sewar25021995!',
         role: 'orders'
-    },
-    ali: {
-        username: 'ali',
-        password: '1234567',
-        role: 'admin'
     }
 };
 

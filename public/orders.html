@@ -232,9 +232,24 @@
         .notification-badge i {
             font-size: 1.2rem;
         }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
+    <button class="logout-button" id="logoutButton">Logout</button>
     <!-- Notification Badge -->
     <div id="notificationBadge" class="notification-badge hidden">
         <i class="fas fa-bell"></i>
@@ -1314,6 +1329,35 @@
                 });
             }, 30000);
         });
+
+        // Check authentication on page load
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    window.location.href = '/orders-login.html';
+                }
+            } catch (error) {
+                window.location.href = '/orders-login.html';
+            }
+        }
+
+        // Handle logout
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST'
+                });
+                window.location.href = '/orders-login.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        });
+
+        // Check authentication when page loads
+        checkAuth();
     </script>
 </body>
 </html> 
