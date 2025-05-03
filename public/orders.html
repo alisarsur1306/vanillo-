@@ -490,6 +490,11 @@
         let audioInitialized = false;
         let audioInitAttempts = 0;
         const MAX_AUDIO_INIT_ATTEMPTS = 3;
+        let orders = {};
+        let activeCountdowns = new Map();
+        let ws;
+        let olderOrders = {};
+        let pollingInterval = null;
 
         // Create a button to enable audio
         function createAudioEnableButton() {
@@ -638,11 +643,6 @@
             });
         });
 
-        let orders = {};
-        let activeCountdowns = new Map();
-        let ws;
-        let olderOrders = {};
-
         // Initialize WebSocket connection
         function initWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -655,6 +655,8 @@
                 console.log('WebSocket connected');
                 // Request orders immediately after connection is established
                 ws.send(JSON.stringify({ type: 'getOrders' }));
+                // Start polling as a fallback
+                startPolling();
             };
             
             ws.onmessage = (event) => {
@@ -667,6 +669,58 @@
                 // Try to reconnect after 5 seconds
                 setTimeout(initWebSocket, 5000);
             };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        // Start polling for new orders
+        function startPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/orders');
+                    if (response.ok) {
+                        const currentOrders = await response.json();
+                        const currentOrderCount = currentOrders.length;
+                        
+                        // Check if there are new orders
+                        if (currentOrderCount > lastOrderCount) {
+                            console.log('New orders detected through polling');
+                            // Update orders and render
+                            orders = currentOrders.reduce((acc, order) => {
+                                acc[order.OrderID] = order;
+                                return acc;
+                            }, {});
+                            renderOrders();
+                            
+                            // Show notification for new orders
+                            const newOrders = currentOrders.slice(lastOrderCount);
+                            newOrders.forEach(order => {
+                                if (order.status === 'pending') {
+                                    showNotification(order, true);
+                                }
+                            });
+                        }
+                        
+                        lastOrderCount = currentOrderCount;
+                    }
+                } catch (error) {
+                    console.error('Error polling for orders:', error);
+                }
+            }, 5000); // Poll every 5 seconds
+        }
+
+        // Stop polling
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
         }
 
         // Handle WebSocket messages
@@ -704,14 +758,7 @@
                         
                     case 'order_update':
                         const updatedOrder = message.data;
-                        // Update the order in our local state
                         orders[updatedOrder.OrderID] = updatedOrder;
-                        
-                        // Start countdown if order is now preparing
-                        if (updatedOrder.status === 'preparing' && updatedOrder.prepTime > 0) {
-                            startCountdown(updatedOrder.OrderID);
-                        }
-                        
                         renderOrders();
                         break;
                         
@@ -719,6 +766,10 @@
                         const deletedOrderId = message.orderId;
                         delete orders[deletedOrderId];
                         renderOrders();
+                        break;
+                        
+                    case 'error':
+                        console.error('WebSocket error:', message.message);
                         break;
                 }
             } catch (error) {
@@ -1386,8 +1437,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing page...');
             // Load orders first, then initialize WebSocket
-            loadOrders();
-            initWebSocket();
+            loadOrders().then(() => {
+                lastOrderCount = Object.keys(orders).length;
+                initWebSocket();
+            });
             
             // Restore column collapse states
             restoreColumnStates();
@@ -1477,6 +1530,8 @@
                     method: 'POST'
                 });
                 document.getElementById('loginOverlay').style.display = 'flex';
+                // Stop polling when logging out
+                stopPolling();
             } catch (error) {
                 console.error('Logout failed:', error);
             }
