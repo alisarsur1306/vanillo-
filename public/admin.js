@@ -671,6 +671,12 @@ async function addMenuItem() {
 // Extra management functions
 function addExtraField(containerId = 'extrasContainer', extra = null) {
     const container = document.getElementById(containerId);
+    if (!container) {
+        console.error(`Container with id ${containerId} not found`);
+        showAlert('Failed to add extra field: Container not found', 'danger');
+        return;
+    }
+
     const extraId = extra ? extra.id : `extra_${Date.now()}`;
     const extraDiv = document.createElement('div');
     extraDiv.className = 'extra-field mb-2';
@@ -710,28 +716,66 @@ function getExtrasFromContainer(containerId) {
 
 // Modified editMenuItem function to handle extras
 async function editMenuItem(item) {
-    document.getElementById('editItemId').value = item.id;
-    document.getElementById('editItemName').value = item.name;
-    document.getElementById('editItemNameEn').value = item.nameEn;
-    document.getElementById('editItemCategory').value = item.categoryId;
-    document.getElementById('editItemPrice').value = item.price;
-    document.getElementById('editItemCurrency').value = item.currency;
-    document.getElementById('editItemDescription').value = item.description || '';
-    document.getElementById('editItemImage').value = item.image;
-
-    // Clear and populate extras
-    const extrasContainer = document.getElementById('extrasContainer');
-    extrasContainer.innerHTML = '';
-    if (item.extras && item.extras.length > 0) {
-        item.extras.forEach(extra => addExtraField('extrasContainer', extra));
+    if (!item || !item.id) {
+        console.error('Invalid item data provided to editMenuItem');
+        showAlert('Failed to edit menu item: Invalid data', 'danger');
+        return;
     }
 
-    new bootstrap.Modal(document.getElementById('editMenuItemModal')).show();
+    try {
+        // Get all required elements first
+        const editItemId = document.getElementById('editItemId');
+        const editItemName = document.getElementById('editItemName');
+        const editItemNameEn = document.getElementById('editItemNameEn');
+        const editItemCategory = document.getElementById('editItemCategory');
+        const editItemPrice = document.getElementById('editItemPrice');
+        const editItemCurrency = document.getElementById('editItemCurrency');
+        const editItemDescription = document.getElementById('editItemDescription');
+        const editItemImage = document.getElementById('editItemImage');
+        const extrasContainer = document.getElementById('extrasContainer');
+        const editMenuItemModal = document.getElementById('editMenuItemModal');
+
+        // Check if all required elements exist
+        if (!editItemId || !editItemName || !editItemNameEn || !editItemCategory || 
+            !editItemPrice || !editItemCurrency || !editItemDescription || 
+            !editItemImage || !extrasContainer || !editMenuItemModal) {
+            console.error('Required form elements not found');
+            showAlert('Failed to edit menu item: Form elements not found', 'danger');
+            return;
+        }
+
+        // Set form values
+        editItemId.value = item.id;
+        editItemName.value = item.name || '';
+        editItemNameEn.value = item.nameEn || '';
+        editItemCategory.value = item.categoryId || '';
+        editItemPrice.value = item.price || '';
+        editItemCurrency.value = item.currency || 'ILS';
+        editItemDescription.value = item.description || '';
+        editItemImage.value = item.image || '';
+
+        // Clear and populate extras
+        extrasContainer.innerHTML = '';
+        if (item.extras && Array.isArray(item.extras)) {
+            item.extras.forEach(extra => addExtraField('extrasContainer', extra));
+        }
+
+        // Show the modal
+        new bootstrap.Modal(editMenuItemModal).show();
+    } catch (error) {
+        console.error('Error in editMenuItem:', error);
+        showAlert('Failed to edit menu item: ' + error.message, 'danger');
+    }
 }
 
 // Modified updateMenuItem function to handle extras
 async function updateMenuItem() {
     const id = document.getElementById('editItemId').value;
+    if (!id) {
+        showAlert('Invalid menu item ID', 'danger');
+        return;
+    }
+
     const name = document.getElementById('editItemName').value;
     const nameEn = document.getElementById('editItemNameEn').value;
     const categoryId = document.getElementById('editItemCategory').value;
@@ -740,6 +784,12 @@ async function updateMenuItem() {
     const description = document.getElementById('editItemDescription').value;
     const image = document.getElementById('editItemImage').value;
     const extras = getExtrasFromContainer('extrasContainer');
+
+    // Validate required fields
+    if (!name || !categoryId || isNaN(price)) {
+        showAlert('Please fill in all required fields', 'danger');
+        return;
+    }
 
     try {
         const response = await fetch(`/api/menu/${id}`, {
@@ -759,7 +809,10 @@ async function updateMenuItem() {
             })
         });
 
-        if (!response.ok) throw new Error('Failed to update menu item');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to update menu item');
+        }
 
         const updatedItem = await response.json();
         const index = menuData.items.findIndex(i => i.id === id);
@@ -773,7 +826,7 @@ async function updateMenuItem() {
         showAlert('Menu item updated successfully', 'success');
     } catch (error) {
         console.error('Error updating menu item:', error);
-        showAlert('Failed to update menu item', 'danger');
+        showAlert(error.message || 'Failed to update menu item', 'danger');
     }
 }
 
@@ -938,9 +991,31 @@ function showAlert(message, type = 'info') {
 
 // Bulk category update functions
 function openBulkCategoryUpdate(categoryId) {
-    document.getElementById('bulkCategoryId').value = categoryId;
-    document.getElementById('bulkExtrasContainer').innerHTML = '';
-    new bootstrap.Modal(document.getElementById('bulkCategoryUpdateModal')).show();
+    try {
+        // Get all required elements first
+        const bulkCategoryId = document.getElementById('bulkCategoryId');
+        const bulkExtrasContainer = document.getElementById('bulkExtrasContainer');
+        const bulkCategoryUpdateModal = document.getElementById('bulkCategoryUpdateModal');
+
+        // Check if all required elements exist
+        if (!bulkCategoryId || !bulkExtrasContainer || !bulkCategoryUpdateModal) {
+            console.error('Required elements for bulk update not found');
+            showAlert('Failed to open bulk update: Required elements not found', 'danger');
+            return;
+        }
+
+        // Set the category ID
+        bulkCategoryId.value = categoryId;
+
+        // Clear any existing extras
+        bulkExtrasContainer.innerHTML = '';
+
+        // Show the modal
+        new bootstrap.Modal(bulkCategoryUpdateModal).show();
+    } catch (error) {
+        console.error('Error in openBulkCategoryUpdate:', error);
+        showAlert('Failed to open bulk update: ' + error.message, 'danger');
+    }
 }
 
 async function applyBulkUpdate() {
