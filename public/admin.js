@@ -303,8 +303,8 @@ async function loadMenuData() {
     try {
         // Fetch menu and orders data in parallel
         const [menuResponse, ordersResponse] = await Promise.all([
-            fetch('/api/menu'),
-            fetch('/api/orders')
+            fetch('/api/menu', { credentials: 'include' }),
+            fetch('/api/orders', { credentials: 'include' })
         ]);
 
         if (!menuResponse.ok) throw new Error('Failed to load menu data');
@@ -1009,6 +1009,7 @@ async function updateMenuData(newData) {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(newData)
         });
 
@@ -1180,11 +1181,13 @@ async function resetAllOrders() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
         });
 
         if (!response.ok) {
-            throw new Error('Failed to reset orders');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to reset orders');
         }
 
         const result = await response.json();
