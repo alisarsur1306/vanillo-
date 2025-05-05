@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة الطلبات - فانيلو كفرقاسم</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="custom.css">
@@ -120,11 +120,16 @@
         }
         .order-item {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
             padding: 0.25rem 0;
             border-bottom: 1px solid #f3f4f6;
+        }
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .item-quantity {
             font-weight: 900;
@@ -142,6 +147,14 @@
         .item-price {
             font-weight: 500;
             color: #059669;
+        }
+        .item-extras {
+            margin-left: 2.5rem;
+        }
+        .extra-item {
+            font-size: 0.9rem;
+            color: #6B7280;
+            margin-bottom: 0.125rem;
         }
         .order-pricing {
             margin-top: 1rem;
@@ -491,8 +504,46 @@
         let audioInitAttempts = 0;
         const MAX_AUDIO_INIT_ATTEMPTS = 3;
 
+        // Initialize audio system
+        async function initAudioSystem() {
+            try {
+                if (!notificationAudio) {
+                    notificationAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                    notificationAudio.volume = 1.0;
+                }
+                
+                // Only try to play if we haven't initialized yet
+                if (!audioInitialized) {
+                    // Try to play and immediately pause to initialize
+                    await notificationAudio.play();
+                    notificationAudio.pause();
+                    notificationAudio.currentTime = 0;
+                    
+                    audioInitialized = true;
+                    console.log('Audio system initialized successfully');
+                }
+                return true;
+            } catch (error) {
+                console.error('Failed to initialize audio system:', error);
+                
+                // Check if it's the NotAllowedError
+                if (error.name === 'NotAllowedError') {
+                    console.log('Audio requires user interaction. Showing enable button.');
+                    createAudioEnableButton();
+                }
+                
+                return false;
+            }
+        }
+
         // Create a button to enable audio
         function createAudioEnableButton() {
+            // Remove existing button if any
+            const existingBtn = document.getElementById('enableAudioBtn');
+            if (existingBtn) {
+                existingBtn.remove();
+            }
+
             const button = document.createElement('button');
             button.id = 'enableAudioBtn';
             button.className = 'fixed top-4 left-4 bg-primary text-white px-4 py-2 rounded-lg z-50 hover:bg-primary-dark transition-colors';
@@ -527,35 +578,6 @@
             setTimeout(() => {
                 toast.remove();
             }, 3000);
-        }
-
-        // Initialize audio system
-        async function initAudioSystem() {
-            try {
-                if (!notificationAudio) {
-                    notificationAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-                    notificationAudio.volume = 1.0;
-                }
-                
-                // Try to play and immediately pause to initialize
-                await notificationAudio.play();
-                notificationAudio.pause();
-                notificationAudio.currentTime = 0;
-                
-                audioInitialized = true;
-                console.log('Audio system initialized successfully');
-                return true;
-            } catch (error) {
-                console.error('Failed to initialize audio system:', error);
-                
-                // Check if it's the NotAllowedError
-                if (error.name === 'NotAllowedError') {
-                    console.log('Audio requires user interaction. Showing enable button.');
-                    createAudioEnableButton();
-                }
-                
-                return false;
-            }
         }
 
         // Play notification sound
@@ -642,9 +664,15 @@
         let activeCountdowns = new Map();
         let ws;
         let olderOrders = {};
+        let isAuthenticated = false;
 
         // Initialize WebSocket connection
         function initWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log('WebSocket already connected');
+                return;
+            }
+
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
             const wsUrl = `${protocol}//${window.location.host}/ws`;
             console.log('Connecting to WebSocket:', wsUrl);
@@ -664,8 +692,15 @@
             
             ws.onclose = () => {
                 console.log('WebSocket disconnected');
-                // Try to reconnect after 5 seconds
-                setTimeout(initWebSocket, 5000);
+                // Only try to reconnect if we're still authenticated
+                if (isAuthenticated) {
+                    console.log('Attempting to reconnect WebSocket...');
+                    setTimeout(initWebSocket, 5000);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
             };
         }
 
@@ -998,8 +1033,15 @@
             card.id = `order-${order.OrderID}`;
             card.draggable = true;
             
-            // Calculate pricing
-            const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Calculate pricing with extras
+            const subtotal = order.items.reduce((sum, item) => {
+                // Calculate extras total for this item
+                const extrasTotal = (item.extras || []).reduce((extSum, extra) => extSum + extra.price, 0);
+                // Calculate item total (item price + extras) * quantity
+                const itemTotal = (item.price + extrasTotal) * item.quantity;
+                return sum + itemTotal;
+            }, 0);
+            
             const deliveryFee = order.deliveryType === 'delivery' ? 15 : 0;
             const total = subtotal + deliveryFee;
             
@@ -1044,14 +1086,32 @@
                         <span>${order.customer?.phone || 'No phone'}</span>
                     </div>
                     <div class="order-items">
-                        ${(order.items || []).map(item => `
-                            <div class="order-item">
-                                <span class="item-quantity">${item.quantity}x</span>
-                                <span class="item-name">${item.name}</span>
-                                <span class="item-price">₪${(item.price * item.quantity).toFixed(2)}</span>
-                                ${item.notes ? `<span class="item-notes">${item.notes}</span>` : ''}
-                            </div>
-                        `).join('')}
+                        ${(order.items || []).map(item => {
+                            // Calculate extras total for this item
+                            const extrasTotal = (item.extras || []).reduce((sum, extra) => sum + extra.price, 0);
+                            // Calculate item total with extras
+                            const itemTotal = (item.price + extrasTotal) * item.quantity;
+                            
+                            return `
+                                <div class="order-item">
+                                    <div class="item-header">
+                                        <span class="item-quantity">${item.quantity}x</span>
+                                        <span class="item-name">${item.name}</span>
+                                        <span class="item-price">₪${itemTotal.toFixed(2)}</span>
+                                    </div>
+                                    ${item.extras && item.extras.length > 0 ? `
+                                        <div class="item-extras">
+                                            ${item.extras.map(extra => `
+                                                <div class="extra-item">
+                                                    + ${extra.name} (₪${extra.price})
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                    ${item.notes ? `<span class="item-notes">${item.notes}</span>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                     <div class="order-pricing">
                         <div class="pricing-row">
@@ -1419,73 +1479,106 @@
             }, 30000);
         });
 
-        // Authentication functions
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/check-auth');
-                const data = await response.json();
-                
-                if (data.authenticated) {
-                    document.getElementById('loginOverlay').style.display = 'none';
-                } else {
-                    document.getElementById('loginOverlay').style.display = 'flex';
-                }
-            } catch (error) {
-                document.getElementById('loginOverlay').style.display = 'flex';
-            }
-        }
+        // Authentication handling
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            const loginForm = document.getElementById('loginForm');
 
-        // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorMessage = document.getElementById('errorMessage');
-            
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
+            // Check authentication status
+            async function checkAuth() {
+                try {
+                    const response = await fetch('/api/check-auth', {
+                        credentials: 'include',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.authenticated && data.role === 'orders') {
+                        isAuthenticated = true;
+                        loginOverlay.style.display = 'none';
+                        // Initialize the rest of the application
+                        if (!ws || ws.readyState !== WebSocket.OPEN) {
+                            initWebSocket();
+                        }
+                        loadOrders();
+                        updateOrderCounts();
+                    } else {
+                        isAuthenticated = false;
+                        loginOverlay.style.display = 'flex';
+                        // Close WebSocket if it exists
+                        if (ws) {
+                            ws.close();
+                            ws = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking auth:', error);
+                    isAuthenticated = false;
+                    loginOverlay.style.display = 'flex';
+                }
+            }
+
+            // Handle login form submission
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const errorMessage = document.getElementById('errorMessage');
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('loginOverlay').style.display = 'none';
-                    // Initialize WebSocket after successful login
-                    initWebSocket();
-                    // Load initial orders
-                    loadOrders();
-                } else {
-                    errorMessage.textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة';
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        },
+                        body: JSON.stringify({ username, password }),
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        isAuthenticated = true;
+                        // Hide login overlay and initialize the application
+                        loginOverlay.style.display = 'none';
+                        initWebSocket();
+                        loadOrders();
+                        updateOrderCounts();
+                    } else {
+                        errorMessage.textContent = data.error || 'Invalid credentials';
+                        errorMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    errorMessage.textContent = 'An error occurred. Please try again.';
                     errorMessage.style.display = 'block';
                 }
-            } catch (error) {
-                errorMessage.textContent = 'حدث خطأ. يرجى المحاولة مرة أخرى.';
-                errorMessage.style.display = 'block';
-            }
-        });
+            });
 
-        // Handle logout
-        document.getElementById('logoutButton').addEventListener('click', async () => {
-            try {
-                await fetch('/api/logout', {
-                    method: 'POST'
-                });
-                document.getElementById('loginOverlay').style.display = 'flex';
-            } catch (error) {
-                console.error('Logout failed:', error);
-            }
-        });
-
-        // Check authentication when page loads
-        document.addEventListener('DOMContentLoaded', () => {
+            // Initial auth check
             checkAuth();
-            // ... rest of your existing initialization code ...
+
+            // Check auth status periodically (every 5 minutes)
+            setInterval(checkAuth, 5 * 60 * 1000);
+
+            // Add visibility change handler to check auth when page becomes visible
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    checkAuth();
+                }
+            });
+
+            // Add beforeunload handler to clean up WebSocket
+            window.addEventListener('beforeunload', () => {
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
+            });
         });
     </script>
 </body>

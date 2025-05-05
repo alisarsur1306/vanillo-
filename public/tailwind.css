@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-gray-50;
+        font-family: 'Tajawal', sans-serif;
+    }
+}
+
+@layer components {
+    .order-card {
+        @apply transition-all duration-300 border-2 bg-white rounded-lg p-4 mb-4 shadow-sm;
+    }
+    .order-card:hover {
+        @apply -translate-y-0.5 shadow-lg;
+    }
+    .priority-urgent {
+        @apply border-red-500;
+    }
+    .priority-high {
+        @apply border-yellow-500;
+    }
+    .priority-normal {
+        @apply border-green-500;
+    }
+    .priority-low {
+        @apply border-gray-500;
+    }
+    .kanban-column {
+        @apply min-h-[calc(100vh-12rem)] transition-all duration-300;
+    }
+    .kanban-column.collapsed {
+        @apply max-h-0 overflow-hidden opacity-0;
+    }
+    .column-header {
+        @apply flex justify-between items-center mb-4 cursor-pointer;
+    }
+    .column-header:hover {
+        @apply opacity-80;
+    }
+    .collapse-icon {
+        @apply transition-transform duration-300;
+    }
+    .collapse-icon.collapsed {
+        @apply -rotate-90;
+    }
+    .order-header {
+        @apply flex justify-between items-center mb-2 pb-2 border-b border-gray-200;
+    }
+    .order-number {
+        @apply font-bold text-lg;
+    }
+    .order-datetime {
+        @apply flex flex-col items-end gap-1;
+    }
+    .order-date {
+        @apply text-gray-600 text-sm font-medium;
+    }
+    .order-time {
+        @apply text-gray-500 text-sm;
+    }
+    .order-details {
+        @apply mb-4;
+    }
+    .customer-info {
+        @apply mb-2;
+    }
+    .customer-info strong {
+        @apply block mb-1;
+    }
+    .order-items {
+        @apply mb-2;
+    }
+    .order-item {
+        @apply flex flex-col gap-1 mb-2 py-1 border-b border-gray-100;
+    }
+    .item-header {
+        @apply flex items-center gap-2;
+    }
+    .item-quantity {
+        @apply font-black text-primary min-w-[2rem] text-lg bg-primary-light px-1 py-0.5 rounded text-center;
+    }
+    .item-name {
+        @apply flex-1;
+    }
+    .item-price {
+        @apply font-medium text-green-600;
+    }
+    .item-extras {
+        @apply ml-10;
+    }
+    .extra-item {
+        @apply text-sm text-gray-500 mb-0.5;
+    }
+    .order-pricing {
+        @apply mt-4 p-3 bg-gray-50 rounded;
+    }
+    .pricing-row {
+        @apply flex justify-between items-center py-1 text-gray-600;
+    }
+    .pricing-row.total {
+        @apply mt-2 pt-2 border-t border-gray-200 font-bold text-gray-900 text-lg;
+    }
+    .item-notes {
+        @apply text-sm text-gray-500 italic;
+    }
+    .countdown {
+        @apply flex items-center gap-2 mt-2 p-2 bg-gray-100 rounded text-lg font-bold;
+    }
+    .countdown-label {
+        @apply text-gray-600 text-sm;
+    }
+    .countdown-time {
+        @apply text-primary;
+    }
+} 

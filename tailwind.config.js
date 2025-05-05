@@ -6,7 +6,15 @@ module.exports = {
     "./*.html"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: '#7C4DFF',
+        secondary: '#FF80AB',
+        accent: '#B388FF',
+        'primary-light': '#E8E0FF',
+        'primary-dark': '#5C35CC'
+      }
+    },
   },
   plugins: [],
 } 

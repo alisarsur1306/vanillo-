@@ -550,11 +550,76 @@
                             <label for="editItemImage" class="form-label">Image URL</label>
                             <input type="text" class="form-control" id="editItemImage">
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Extras</label>
+                            <div id="extrasContainer">
+                                <!-- Extras will be added here dynamically -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addExtraField()">
+                                <i class="bi bi-plus"></i> Add Extra
+                            </button>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="updateMenuItem()">Update Item</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Category Update Modal -->
+    <div class="modal fade" id="bulkCategoryUpdateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bulk Update Category Items</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bulkCategoryUpdateForm">
+                        <input type="hidden" id="bulkCategoryId">
+                        <div class="mb-3">
+                            <label class="form-label">Select Fields to Update</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="updatePrice" checked>
+                                <label class="form-check-label" for="updatePrice">Price</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="updateCurrency" checked>
+                                <label class="form-check-label" for="updateCurrency">Currency</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="updateExtras" checked>
+                                <label class="form-check-label" for="updateExtras">Extras</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bulkItemPrice" class="form-label">New Price</label>
+                            <input type="number" class="form-control" id="bulkItemPrice">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bulkItemCurrency" class="form-label">New Currency</label>
+                            <select class="form-control" id="bulkItemCurrency">
+                                <option value="ILS">ILS</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Extras</label>
+                            <div id="bulkExtrasContainer">
+                                <!-- Extras will be added here dynamically -->
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addBulkExtraField()">
+                                <i class="bi bi-plus"></i> Add Extra
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="applyBulkUpdate()">Apply Changes</button>
                 </div>
             </div>
         </div>

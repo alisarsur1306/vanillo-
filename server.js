@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 3001;
 const http = require('http');
 const WebSocket = require('ws');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const { menuData, restaurantInfo } = require('./menu-data.js');
 
 // Authentication configuration
@@ -23,14 +24,25 @@ const USERS = {
     }
 };
 
+// Create sessions directory if it doesn't exist
+const sessionsDir = path.join(__dirname, 'sessions');
+if (!fs.existsSync(sessionsDir)) {
+    fs.mkdirSync(sessionsDir, { recursive: true });
+}
+
 // Session configuration
 app.use(session({
+    store: new FileStore({
+        path: sessionsDir,
+        ttl: 24 * 60 * 60, // 24 hours
+        reapInterval: 60 * 60 // Clean up expired sessions every hour
+    }),
     secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none',
+        sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         httpOnly: true
     }
@@ -74,15 +86,28 @@ app.post('/api/login', (req, res) => {
             username: username,
             role: username === adminUser.username ? 'admin' : 'orders'
         };
-        res.json({ success: true, role: req.session.user.role });
+        req.session.save((err) => {
+            if (err) {
+                console.error('Error saving session:', err);
+                res.status(500).json({ error: 'Failed to save session' });
+            } else {
+                res.json({ success: true, role: req.session.user.role });
+            }
+        });
     } else {
         res.status(401).json({ error: 'Invalid credentials' });
     }
 });
 
 app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            res.status(500).json({ error: 'Failed to logout' });
+        } else {
+            res.json({ success: true });
+        }
+    });
 });
 
 app.get('/api/check-auth', (req, res) => {
