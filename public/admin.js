@@ -489,6 +489,23 @@ function updateOrdersList() {
         return;
     }
     
+    // Add reset button at the top
+    const resetButton = document.createElement('div');
+    resetButton.className = 'mb-3';
+    resetButton.innerHTML = `
+        <button class="btn btn-danger" onclick="resetAllOrders()">
+            <i class="bi bi-trash"></i> Reset All Orders
+        </button>
+    `;
+    
+    // Find the orders container and add the reset button at the top
+    const ordersContainer = document.getElementById('ordersSection');
+    const existingResetButton = ordersContainer.querySelector('.mb-3');
+    if (existingResetButton) {
+        existingResetButton.remove();
+    }
+    ordersContainer.insertBefore(resetButton, ordersContainer.firstChild);
+    
     // Ensure orders array exists
     if (!menuData.orders) {
         menuData.orders = [];
@@ -964,26 +981,51 @@ async function handleFileImport(event) {
             throw new Error('Invalid data format');
         }
 
+        // Update menu data
+        await updateMenuData(data);
+        
+        // Clear the file input
+        event.target.value = '';
+    } catch (error) {
+        console.error('Error importing menu data:', error);
+        showAlert('Error importing menu data. Please check the file format.', 'danger');
+    }
+}
+
+// Function to update menu data
+async function updateMenuData(newData) {
+    try {
         const response = await fetch('/api/menu', {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newData)
         });
 
-        if (response.ok) {
-            menuData = data;
+        if (!response.ok) {
+            throw new Error('Failed to update menu data');
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            // Update local data
+            menuData = result.data;
+            
+            // Update UI
             updateDashboardStats();
             updateCategoriesList();
             updateMenuItemsList();
             updateCategorySelects();
-            alert('Menu data imported successfully');
+            
+            showAlert('Menu data updated successfully', 'success');
+        } else {
+            throw new Error(result.error || 'Failed to update menu data');
         }
     } catch (error) {
-        console.error('Error importing menu data:', error);
-        alert('Error importing menu data. Please check the file format.');
+        console.error('Error updating menu data:', error);
+        showAlert(error.message || 'Failed to update menu data', 'danger');
     }
-
-    event.target.value = '';
 }
 
 // Utility Functions
@@ -1115,6 +1157,43 @@ async function applyBulkUpdate() {
     } catch (error) {
         console.error('Error applying bulk update:', error);
         showAlert('Failed to update category items', 'danger');
+    }
+}
+
+// Function to reset all orders
+async function resetAllOrders() {
+    if (!confirm('Are you sure you want to reset all orders? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/orders/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to reset orders');
+        }
+
+        const result = await response.json();
+        if (result.success) {
+            // Clear local orders data
+            menuData.orders = [];
+            
+            // Update UI
+            updateDashboardStats();
+            updateOrdersList();
+            
+            showAlert('All orders have been reset successfully', 'success');
+        } else {
+            throw new Error(result.error || 'Failed to reset orders');
+        }
+    } catch (error) {
+        console.error('Error resetting orders:', error);
+        showAlert(error.message || 'Failed to reset orders', 'danger');
     }
 }
 

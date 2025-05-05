@@ -160,21 +160,39 @@ function broadcastOrders() {
 function loadMenuData() {
     try {
         const menuDataPath = path.join(__dirname, 'menu-data.json');
+        const backupPath = path.join(__dirname, 'menu-data.backup.json');
+        
+        // First try to load from the main JSON file
         if (fs.existsSync(menuDataPath)) {
-            // Read existing menu data
             const existingData = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
             
-            // Only update if the existing data is valid
+            // Validate the data structure
             if (existingData && existingData.categories && existingData.items) {
                 Object.assign(menuData, existingData);
                 console.log('Menu data loaded from existing JSON file');
+                
+                // Create a backup of the valid data
+                fs.writeFileSync(backupPath, JSON.stringify(existingData, null, 4));
                 return;
             }
         }
         
-        // If JSON file doesn't exist or is invalid, create it from the module
+        // If main file is invalid or doesn't exist, try the backup
+        if (fs.existsSync(backupPath)) {
+            const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
+            if (backupData && backupData.categories && backupData.items) {
+                Object.assign(menuData, backupData);
+                // Restore the backup to the main file
+                fs.writeFileSync(menuDataPath, JSON.stringify(backupData, null, 4));
+                console.log('Menu data restored from backup');
+                return;
+            }
+        }
+        
+        // If both files are invalid or don't exist, create from module
         const { menuData: moduleData } = require('./menu-data.js');
         fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
+        fs.writeFileSync(backupPath, JSON.stringify(moduleData, null, 4));
         Object.assign(menuData, moduleData);
         console.log('Created new menu-data.json from module');
     } catch (error) {
@@ -247,6 +265,10 @@ app.put('/api/menu', (req, res) => {
         // Write the updated data to menu-data.json
         const menuDataPath = path.join(__dirname, 'menu-data.json');
         fs.writeFileSync(menuDataPath, JSON.stringify(menuData, null, 4));
+        
+        // Create a new backup after successful update
+        backupMenuData();
+        
         console.log('Menu data updated successfully');
         
         res.json({ 
@@ -877,6 +899,51 @@ function getAllOrders() {
     
     return orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
+
+// API endpoint to reset all orders (admin only)
+app.post('/api/orders/reset', requireAuth, (req, res) => {
+    // Check if user is admin
+    if (req.session.user.role !== 'admin') {
+        return res.status(403).json({ 
+            success: false, 
+            error: 'Only admin can reset orders' 
+        });
+    }
+
+    try {
+        // Delete all order files
+        const orderFiles = fs.readdirSync(ordersDir);
+        orderFiles.forEach(file => {
+            if (file.endsWith('.json')) {
+                fs.unlinkSync(path.join(ordersDir, file));
+            }
+        });
+
+        // Reset order counter
+        const counterPath = path.join(__dirname, 'order-counter.json');
+        fs.writeFileSync(counterPath, JSON.stringify({ lastOrderId: 0 }, null, 2));
+
+        // Broadcast the reset to all connected clients
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ 
+                    type: 'orders_reset'
+                }));
+            }
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'All orders have been reset' 
+        });
+    } catch (error) {
+        console.error('Error resetting orders:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to reset orders' 
+        });
+    }
+});
 
 // Export the Express API
 module.exports = app;
