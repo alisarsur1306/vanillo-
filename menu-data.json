@@ -2,7 +2,7 @@
     "categories": [
         {
             "id": "features",
-            "name": "مميزات فانيلو ",
+            "name": "مميزات فانيلو",
             "nameEn": "Vanillo Features",
             "description": "مميزات فانيلو المتنوعة",
             "image": "images/features.jpg"
@@ -47,25 +47,18 @@
         {
             "id": "mickey",
             "categoryId": "features",
-            "name": "ميكي فانيلو ",
-            "nameEn": "Mickey Vanillo",
-            "description": "كريب مع شوكولاتة وموز",
-            "descriptionEn": "Crepe with chocolate and banana",
-            "price": 25,
+            "name": "ميكي فانيلو",
+            "nameEn": "Vanillo Mickey",
+            "price": 25.00,
             "currency": "ILS",
+            "description": "كريب مع شوكولاتة وموز",
             "image": "images/mickey.jpg",
             "extras": [
                 {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -74,28 +67,16 @@
             "categoryId": "features",
             "name": "سمكة فانيلو",
             "nameEn": "Vanillo Fish",
-            "price": 20,
+            "price": 20.00,
             "currency": "ILS",
             "description": "",
             "image": "images/fish.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -104,28 +85,16 @@
             "categoryId": "features",
             "name": "بيبي فيش فانيلو",
             "nameEn": "Vanillo Baby Fish",
-            "price": 20,
+            "price": 20.00,
             "currency": "ILS",
             "description": "10 سمكات صغار وعلى جانبها الشوكلاطة",
             "image": "images/baby-fish.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -134,28 +103,16 @@
             "categoryId": "features",
             "name": "سوفلية",
             "nameEn": "Souffle",
-            "price": 25,
+            "price": 25.00,
             "currency": "ILS",
             "description": "سوفلية محشية الشوكلاطة الساخنة",
             "image": "images/souffle.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -164,28 +121,16 @@
             "categoryId": "features",
             "name": "تشوروس محشي",
             "nameEn": "Filled Churros",
-            "price": 20,
+            "price": 25.00,
             "currency": "ILS",
             "description": "",
             "image": "images/churros-filled.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -194,28 +139,16 @@
             "categoryId": "features",
             "name": "تشوروس عادي",
             "nameEn": "Regular Churros",
-            "price": 15,
+            "price": 20.00,
             "currency": "ILS",
             "description": "",
             "image": "images/churros.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -224,28 +157,16 @@
             "categoryId": "features",
             "name": "يوغورت",
             "nameEn": "Yogurt",
-            "price": 15,
+            "price": 20.00,
             "currency": "ILS",
             "description": "",
             "image": "images/yogurt.jpg",
             "extras": [
                 {
-                    "id": "extra_1746447913663",
-                    "name": "teetet",
-                    "nameEn": "teett",
-                    "price": 333
-                },
-                {
-                    "id": "extra_1746448020920",
-                    "name": "teeee",
-                    "nameEn": "teeeee",
-                    "price": 4
-                },
-                {
-                    "id": "extra_1746448029644",
-                    "name": "ali",
-                    "nameEn": "aliiii",
-                    "price": 3
+                    "id": "extra_1746451270962",
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -254,16 +175,16 @@
             "categoryId": "crepes",
             "name": "كريب مثلث\\مقطع",
             "nameEn": "Triangle/Cut Crepe",
-            "price": null,
+            "price": 20.00,
             "currency": "ILS",
             "description": "كريب مثلث او مقطع بدون اضافات",
             "image": "images/crepe-triangle.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -272,16 +193,16 @@
             "categoryId": "crepes",
             "name": "كريب الحلزونة",
             "nameEn": "Snail Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "كريب محشي بوظة",
             "image": "images/crepe-snail.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -290,16 +211,16 @@
             "categoryId": "crepes",
             "name": "كريب الكعكة",
             "nameEn": "Cake Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "كريب محشي بلكريمة والشوكلاطات او الفواكه الطازجة",
             "image": "images/crepe-cake.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -308,16 +229,16 @@
             "categoryId": "crepes",
             "name": "كريب سوشي",
             "nameEn": "Sushi Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "كريب محشي بكعكة الكيندر",
             "image": "images/crepe-sushi.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -326,16 +247,16 @@
             "categoryId": "crepes",
             "name": "كريب فوتشيني",
             "nameEn": "Fettuccine Crepe",
-            "price": null,
+            "price": 25.00,
             "currency": "ILS",
             "description": "كريب فوتوشيني مميز",
             "image": "images/crepe-fettuccine.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -344,16 +265,16 @@
             "categoryId": "crepes",
             "name": "كريب لوتوس",
             "nameEn": "Lotus Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "",
             "image": "images/crepe-lotus.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -362,16 +283,16 @@
             "categoryId": "crepes",
             "name": "كريب محشي فواكه",
             "nameEn": "Fruit Filled Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "كريب محشي بلفواكه الطازجة",
             "image": "images/crepe-fruits.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -380,70 +301,16 @@
             "categoryId": "crepes",
             "name": "كريب نوتيلا ميكس",
             "nameEn": "Nutella Mix Crepe",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "كريب مثلث مع اضافة 3 انواع شوكلاطة بجانب الكريب",
             "image": "images/crepe-nutella-mix.jpg",
             "extras": [
                 {
                     "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
-                }
-            ]
-        },
-        {
-            "id": "crepe-kitkat",
-            "categoryId": "crepes",
-            "name": "كريب كات كات",
-            "nameEn": "KitKat Crepe",
-            "price": null,
-            "currency": "ILS",
-            "description": "كريب محشي بشوكلاطة الكات كات",
-            "image": "images/crepe-kitkat.jpg",
-            "extras": [
-                {
-                    "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
-                }
-            ]
-        },
-        {
-            "id": "crepe-vip",
-            "categoryId": "crepes",
-            "name": "كريب VIP",
-            "nameEn": "VIP Crepe",
-            "price": null,
-            "currency": "ILS",
-            "description": "كريب محشي بلشوكلاطة",
-            "image": "images/crepe-vip.jpg",
-            "extras": [
-                {
-                    "id": "extra_1746447342235",
-                    "name": "ALI",
-                    "nameEn": "ALII2",
-                    "price": 2
-                }
-            ]
-        },
-        {
-            "id": "waffle-finger",
-            "categoryId": "waffles",
-            "name": "وافل اصباع",
-            "nameEn": "Finger Waffle",
-            "price": null,
-            "currency": "ILS",
-            "description": "",
-            "image": "images/waffle-finger.jpg",
-            "extras": [
-                {
-                    "id": "extra_1746447216847",
-                    "name": "اكسترا",
-                    "nameEn": "Extra2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -452,16 +319,16 @@
             "categoryId": "waffles",
             "name": "وافل بابلي",
             "nameEn": "Bubble Waffle",
-            "price": null,
+            "price": 25.00,
             "currency": "ILS",
             "description": "",
             "image": "images/waffle-bubble.jpg",
             "extras": [
                 {
                     "id": "extra_1746447216847",
-                    "name": "اكسترا",
-                    "nameEn": "Extra2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -470,16 +337,16 @@
             "categoryId": "waffles",
             "name": "وافل عائلي",
             "nameEn": "Family Waffle",
-            "price": null,
+            "price": 20.00,
             "currency": "ILS",
             "description": "",
             "image": "images/waffle-family.jpg",
             "extras": [
                 {
                     "id": "extra_1746447216847",
-                    "name": "اكسترا",
-                    "nameEn": "Extra2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -488,16 +355,16 @@
             "categoryId": "waffles",
             "name": "وافل فواكه",
             "nameEn": "Fruit Waffle",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "",
             "image": "images/waffle-fruits.jpg",
             "extras": [
                 {
                     "id": "extra_1746447216847",
-                    "name": "اكسترا",
-                    "nameEn": "Extra2",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -506,16 +373,16 @@
             "categoryId": "fish",
             "name": "12 حبة فشافيش",
             "nameEn": "12 Fish Pieces",
-            "price": null,
+            "price": 20.00,
             "currency": "ILS",
             "description": "",
             "image": "images/fachafish-12.jpg",
             "extras": [
                 {
                     "id": "extra_1746447677072",
-                    "name": "TES",
-                    "nameEn": "TEST",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -524,16 +391,16 @@
             "categoryId": "fish",
             "name": "24 حبة فشافيش",
             "nameEn": "24 Fish Pieces",
-            "price": null,
+            "price": 35.00,
             "currency": "ILS",
             "description": "",
             "image": "images/fachafish-24.jpg",
             "extras": [
                 {
                     "id": "extra_1746447677072",
-                    "name": "TES",
-                    "nameEn": "TEST",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -542,16 +409,16 @@
             "categoryId": "fish",
             "name": "6 حبة فشافيش",
             "nameEn": "6 Fish Pieces",
-            "price": null,
+            "price": 10.00,
             "currency": "ILS",
             "description": "",
             "image": "images/fachafish-6.jpg",
             "extras": [
                 {
                     "id": "extra_1746447677072",
-                    "name": "TES",
-                    "nameEn": "TEST",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -560,16 +427,16 @@
             "categoryId": "pancakes",
             "name": "3 قطع بانكيك",
             "nameEn": "3 Pancake Pieces",
-            "price": null,
+            "price": 30.00,
             "currency": "ILS",
             "description": "",
             "image": "images/pancake-3.jpg",
             "extras": [
                 {
                     "id": "extra_1746447476706",
-                    "name": "TEST",
-                    "nameEn": "TES",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -578,16 +445,16 @@
             "categoryId": "pancakes",
             "name": "بانكيك لوتوس",
             "nameEn": "Lotus Pancake",
-            "price": null,
+            "price": 35.00,
             "currency": "ILS",
             "description": "بانكيك لوتوس المكونة من ثلاثة قطع",
             "image": "images/pancake-lotus.jpg",
             "extras": [
                 {
                     "id": "extra_1746447476706",
-                    "name": "TEST",
-                    "nameEn": "TES",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -596,16 +463,16 @@
             "categoryId": "pancakes",
             "name": "12 قطعة بانكيك",
             "nameEn": "12 Pancake Pieces",
-            "price": null,
+            "price": 20.00,
             "currency": "ILS",
             "description": "حجم صغير",
             "image": "images/pancake-12.jpg",
             "extras": [
                 {
                     "id": "extra_1746447476706",
-                    "name": "TEST",
-                    "nameEn": "TES",
-                    "price": 2
+                    "name": "شوكلاطة",
+                    "nameEn": "Chocolate",
+                    "price": 2.00
                 }
             ]
         },
@@ -614,7 +481,7 @@
             "categoryId": "drinks",
             "name": "كوكتيل فانيلو",
             "nameEn": "Vanillo Cocktail",
-            "price": 17,
+            "price": 17.00,
             "currency": "ILS",
             "description": "",
             "image": "images/vanillo-cocktail.jpg"
@@ -624,7 +491,7 @@
             "categoryId": "drinks",
             "name": "ميلكشيك فانيلو",
             "nameEn": "Vanillo Milkshake",
-            "price": 17,
+            "price": 17.00,
             "currency": "ILS",
             "description": "ميلكشيك من جميع انواع البوظة",
             "image": "images/vanillo-milkshake.jpg"
@@ -634,7 +501,7 @@
             "categoryId": "drinks",
             "name": "موخيتو",
             "nameEn": "Mojito",
-            "price": 12,
+            "price": 12.00,
             "currency": "ILS",
             "description": "امكانية استعمال سبرايت او مشروب طاقة",
             "image": "images/mojito.jpg"
@@ -644,7 +511,7 @@
             "categoryId": "drinks",
             "name": "جروس",
             "nameEn": "Juice",
-            "price": 5,
+            "price": 5.00,
             "currency": "ILS",
             "description": "",
             "image": "images/juice.jpg"
@@ -654,7 +521,7 @@
             "categoryId": "drinks",
             "name": "ايسكافية",
             "nameEn": "Iced Coffee",
-            "price": 5,
+            "price": 5.00,
             "currency": "ILS",
             "description": "",
             "image": "images/iced-coffee.jpg"
@@ -664,7 +531,7 @@
             "categoryId": "drinks",
             "name": "عصير برتقال",
             "nameEn": "Orange Juice",
-            "price": 10,
+            "price": 10.00,
             "currency": "ILS",
             "description": "",
             "image": "images/orange-juice.jpg"
@@ -674,7 +541,7 @@
             "categoryId": "drinks",
             "name": "مشروب بارد",
             "nameEn": "Cold Drink",
-            "price": 7,
+            "price": 7.00,
             "currency": "ILS",
             "description": "",
             "image": "images/cold-drink.jpg"
@@ -684,7 +551,7 @@
             "categoryId": "drinks",
             "name": "ماء",
             "nameEn": "Water",
-            "price": 7,
+            "price": 7.00,
             "currency": "ILS",
             "description": "",
             "image": "images/water.jpg"
