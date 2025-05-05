@@ -301,20 +301,29 @@ function switchSection(section) {
 // Data management functions
 async function loadMenuData() {
     try {
-        const response = await fetch('/api/menu');
-        if (!response.ok) throw new Error('Failed to load menu data');
+        // Fetch menu and orders data in parallel
+        const [menuResponse, ordersResponse] = await Promise.all([
+            fetch('/api/menu'),
+            fetch('/api/orders')
+        ]);
+
+        if (!menuResponse.ok) throw new Error('Failed to load menu data');
+        if (!ordersResponse.ok) throw new Error('Failed to load orders data');
         
-        const data = await response.json();
-        console.log('Menu data received:', data);
+        const menuData = await menuResponse.json();
+        const ordersData = await ordersResponse.json();
+        
+        console.log('Menu data received:', menuData);
+        console.log('Orders data received:', ordersData);
         
         // Update menuData with the received data
-        menuData = {
-            categories: data.categories || [],
-            items: data.items || [],
-            orders: data.orders || []
+        window.menuData = {
+            categories: menuData.categories || [],
+            items: menuData.items || [],
+            orders: ordersData || [] // Set orders from the orders response
         };
         
-        console.log('Processed menu data:', menuData);
+        console.log('Processed menu data:', window.menuData);
         
         // Update UI
         updateDashboardStats();
@@ -323,8 +332,8 @@ async function loadMenuData() {
         updateOrdersList();
         updateCategorySelects();
     } catch (error) {
-        console.error('Error loading menu data:', error);
-        showAlert('Failed to load menu data', 'danger');
+        console.error('Error loading data:', error);
+        showAlert('Failed to load data: ' + error.message, 'danger');
     }
 }
 
