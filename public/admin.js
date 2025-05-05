@@ -353,7 +353,7 @@ function updateCategoriesList() {
     
     // Add each category
     menuData.categories.forEach(category => {
-        const itemCount = menuData.items.filter(item => item.category === category.name).length;
+        const itemCount = menuData.items.filter(item => item.categoryId === category.id).length;
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>
@@ -373,6 +373,9 @@ function updateCategoriesList() {
                 <div class="btn-group">
                     <button class="btn btn-sm btn-outline-primary edit-category-btn" data-category='${JSON.stringify(category)}'>
                         <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="openBulkCategoryUpdate('${category.id}')">
+                        <i class="bi bi-arrow-repeat"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${category.id}')">
                         <i class="bi bi-trash"></i>
@@ -665,6 +668,47 @@ async function addMenuItem() {
     }
 }
 
+// Extra management functions
+function addExtraField(containerId = 'extrasContainer', extra = null) {
+    const container = document.getElementById(containerId);
+    const extraId = extra ? extra.id : `extra_${Date.now()}`;
+    const extraDiv = document.createElement('div');
+    extraDiv.className = 'extra-field mb-2';
+    extraDiv.innerHTML = `
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Extra Name (Arabic)" value="${extra ? extra.name : ''}" required>
+            <input type="text" class="form-control" placeholder="Extra Name (English)" value="${extra ? extra.nameEn : ''}" required>
+            <input type="number" class="form-control" placeholder="Price" value="${extra ? extra.price : ''}" required>
+            <button class="btn btn-outline-danger" type="button" onclick="this.parentElement.parentElement.remove()">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(extraDiv);
+}
+
+function addBulkExtraField() {
+    addExtraField('bulkExtrasContainer');
+}
+
+function getExtrasFromContainer(containerId) {
+    const container = document.getElementById(containerId);
+    const extras = [];
+    container.querySelectorAll('.extra-field').forEach(field => {
+        const inputs = field.querySelectorAll('input');
+        if (inputs[0].value && inputs[1].value && inputs[2].value) {
+            extras.push({
+                id: `extra_${Date.now()}`,
+                name: inputs[0].value,
+                nameEn: inputs[1].value,
+                price: parseFloat(inputs[2].value)
+            });
+        }
+    });
+    return extras;
+}
+
+// Modified editMenuItem function to handle extras
 async function editMenuItem(item) {
     document.getElementById('editItemId').value = item.id;
     document.getElementById('editItemName').value = item.name;
@@ -675,9 +719,17 @@ async function editMenuItem(item) {
     document.getElementById('editItemDescription').value = item.description || '';
     document.getElementById('editItemImage').value = item.image;
 
+    // Clear and populate extras
+    const extrasContainer = document.getElementById('extrasContainer');
+    extrasContainer.innerHTML = '';
+    if (item.extras && item.extras.length > 0) {
+        item.extras.forEach(extra => addExtraField('extrasContainer', extra));
+    }
+
     new bootstrap.Modal(document.getElementById('editMenuItemModal')).show();
 }
 
+// Modified updateMenuItem function to handle extras
 async function updateMenuItem() {
     const id = document.getElementById('editItemId').value;
     const name = document.getElementById('editItemName').value;
@@ -687,6 +739,7 @@ async function updateMenuItem() {
     const currency = document.getElementById('editItemCurrency').value;
     const description = document.getElementById('editItemDescription').value;
     const image = document.getElementById('editItemImage').value;
+    const extras = getExtrasFromContainer('extrasContainer');
 
     try {
         const response = await fetch(`/api/menu/${id}`, {
@@ -701,7 +754,8 @@ async function updateMenuItem() {
                 price,
                 currency,
                 description,
-                image
+                image,
+                extras
             })
         });
 
@@ -880,5 +934,101 @@ function showAlert(message, type = 'info') {
     `;
     document.body.appendChild(alertDiv);
     setTimeout(() => alertDiv.remove(), 5000);
+}
+
+// Bulk category update functions
+function openBulkCategoryUpdate(categoryId) {
+    document.getElementById('bulkCategoryId').value = categoryId;
+    document.getElementById('bulkExtrasContainer').innerHTML = '';
+    new bootstrap.Modal(document.getElementById('bulkCategoryUpdateModal')).show();
+}
+
+async function applyBulkUpdate() {
+    const categoryId = document.getElementById('bulkCategoryId').value;
+    const updatePrice = document.getElementById('updatePrice').checked;
+    const updateCurrency = document.getElementById('updateCurrency').checked;
+    const updateExtras = document.getElementById('updateExtras').checked;
+    
+    const newPrice = updatePrice ? parseFloat(document.getElementById('bulkItemPrice').value) : null;
+    const newCurrency = updateCurrency ? document.getElementById('bulkItemCurrency').value : null;
+    const newExtras = updateExtras ? getExtrasFromContainer('bulkExtrasContainer') : null;
+
+    try {
+        const itemsToUpdate = menuData.items.filter(item => item.categoryId === categoryId);
+        const updatePromises = itemsToUpdate.map(async item => {
+            // Get the current item data from menuData
+            const currentItem = menuData.items.find(i => i.id === item.id);
+            
+            // Create update data starting with the current item data
+            const updateData = { ...currentItem };
+            
+            // Only update price if explicitly requested AND not updating extras
+            if (updatePrice && !updateExtras) {
+                updateData.price = newPrice;
+            }
+            
+            // Update currency if requested
+            if (updateCurrency) {
+                updateData.currency = newCurrency;
+            }
+            
+            // Update extras if requested - combine existing and new extras
+            if (updateExtras && newExtras) {
+                // Ensure current item has an extras array
+                const currentExtras = currentItem.extras || [];
+                
+                // Combine existing extras with new ones
+                updateData.extras = [
+                    ...currentExtras,
+                    ...newExtras
+                ];
+                
+                // Ensure we keep the existing price when updating extras
+                updateData.price = currentItem.price;
+            }
+
+            console.log('Updating item with data:', updateData); // Debug log
+
+            const response = await fetch(`/api/menu/${item.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to update item ${item.id}`);
+            }
+
+            const result = await response.json();
+            console.log('Server response:', result); // Debug log
+
+            if (!result.success) {
+                throw new Error(`Server failed to update item ${item.id}`);
+            }
+
+            // Update local data while preserving the price and combining extras
+            const index = menuData.items.findIndex(i => i.id === item.id);
+            if (index !== -1) {
+                menuData.items[index] = {
+                    ...result.item,
+                    // Keep the existing price unless explicitly updating price (and not extras)
+                    price: (updatePrice && !updateExtras) ? newPrice : currentItem.price,
+                    // Ensure extras are combined if we're updating them
+                    extras: updateExtras ? updateData.extras : result.item.extras
+                };
+            }
+        });
+
+        await Promise.all(updatePromises);
+        
+        updateMenuItemsList();
+        bootstrap.Modal.getInstance(document.getElementById('bulkCategoryUpdateModal')).hide();
+        showAlert('Category items updated successfully', 'success');
+    } catch (error) {
+        console.error('Error applying bulk update:', error);
+        showAlert('Failed to update category items', 'danger');
+    }
 }
 
