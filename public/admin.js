@@ -1051,16 +1051,23 @@ async function applyBulkUpdate() {
                 updateData.currency = newCurrency;
             }
             
-            // Update extras if requested - combine existing and new extras
+            // Update extras if requested - add new extras while preserving existing ones
             if (updateExtras && newExtras) {
                 // Ensure current item has an extras array
                 const currentExtras = currentItem.extras || [];
                 
-                // Combine existing extras with new ones
-                updateData.extras = [
-                    ...currentExtras,
-                    ...newExtras
-                ];
+                // Create a map of existing extras by name to avoid duplicates
+                const existingExtrasMap = new Map(currentExtras.map(extra => [extra.name, extra]));
+                
+                // Add new extras, but only if they don't already exist
+                newExtras.forEach(newExtra => {
+                    if (!existingExtrasMap.has(newExtra.name)) {
+                        existingExtrasMap.set(newExtra.name, newExtra);
+                    }
+                });
+                
+                // Convert the map back to an array
+                updateData.extras = Array.from(existingExtrasMap.values());
                 
                 // Ensure we keep the existing price when updating extras
                 updateData.price = currentItem.price;
@@ -1087,14 +1094,14 @@ async function applyBulkUpdate() {
                 throw new Error(`Server failed to update item ${item.id}`);
             }
 
-            // Update local data while preserving the price and combining extras
+            // Update local data while preserving the price and managing extras
             const index = menuData.items.findIndex(i => i.id === item.id);
             if (index !== -1) {
                 menuData.items[index] = {
                     ...result.item,
                     // Keep the existing price unless explicitly updating price (and not extras)
                     price: (updatePrice && !updateExtras) ? newPrice : currentItem.price,
-                    // Ensure extras are combined if we're updating them
+                    // Use the updated extras array that combines existing and new extras
                     extras: updateExtras ? updateData.extras : result.item.extras
                 };
             }
