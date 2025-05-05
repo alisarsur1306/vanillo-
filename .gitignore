@@ -46,3 +46,7 @@ logs/
 # Orders directory (if you want to track orders, remove this line)
 orders/
 order-counter.json
+
+# Backup and session files
+menu-data.backup.json
+sessions/
