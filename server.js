@@ -161,28 +161,61 @@ function loadMenuData() {
     try {
         const menuDataPath = path.join(__dirname, 'menu-data.json');
         if (fs.existsSync(menuDataPath)) {
-            const data = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
-            Object.assign(menuData, data);
-            console.log('Menu data loaded from JSON file');
-        } else {
-            // If JSON file doesn't exist, create it from the module
-            const { menuData: moduleData } = require('./menu-data.js');
-            fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
-            Object.assign(menuData, moduleData);
-            console.log('Created menu-data.json from module');
+            // Read existing menu data
+            const existingData = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
+            
+            // Only update if the existing data is valid
+            if (existingData && existingData.categories && existingData.items) {
+                Object.assign(menuData, existingData);
+                console.log('Menu data loaded from existing JSON file');
+                return;
+            }
         }
+        
+        // If JSON file doesn't exist or is invalid, create it from the module
+        const { menuData: moduleData } = require('./menu-data.js');
+        fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
+        Object.assign(menuData, moduleData);
+        console.log('Created new menu-data.json from module');
     } catch (error) {
         console.error('Error loading menu data:', error);
+        // Try to load from module as fallback
+        try {
+            const { menuData: moduleData } = require('./menu-data.js');
+            Object.assign(menuData, moduleData);
+            console.log('Loaded menu data from module as fallback');
+        } catch (fallbackError) {
+            console.error('Failed to load menu data from module:', fallbackError);
+        }
     }
 }
 
 // Load menu data on server start
 loadMenuData();
 
+// Function to create a backup of menu data
+function backupMenuData() {
+    try {
+        const menuDataPath = path.join(__dirname, 'menu-data.json');
+        const backupPath = path.join(__dirname, 'menu-data.backup.json');
+        
+        if (fs.existsSync(menuDataPath)) {
+            const data = fs.readFileSync(menuDataPath, 'utf8');
+            fs.writeFileSync(backupPath, data);
+            console.log('Menu data backup created successfully');
+        }
+    } catch (error) {
+        console.error('Error creating menu data backup:', error);
+    }
+}
+
 // API endpoint to update menu data
 app.put('/api/menu', (req, res) => {
     console.log('Received request to update menu data:', req.body);
     try {
+        // Create backup before updating
+        backupMenuData();
+        
         // Update the in-memory menu data
         const { categories, items } = req.body;
         
