@@ -66,7 +66,20 @@ function initializeElements() {
         totalItems: document.getElementById('totalItems'),
         activeOrders: document.getElementById('activeOrders'),
         itemCategorySelect: document.getElementById('itemCategory'),
-        editItemCategorySelect: document.getElementById('editItemCategory')
+        editItemCategorySelect: document.getElementById('editItemCategory'),
+        bulkCategoryId: document.getElementById('bulkCategoryId'),
+        bulkExtrasContainer: document.getElementById('bulkExtrasContainer'),
+        bulkCategoryUpdateModal: document.getElementById('bulkCategoryUpdateModal'),
+        editItemId: document.getElementById('editItemId'),
+        editItemName: document.getElementById('editItemName'),
+        editItemNameEn: document.getElementById('editItemNameEn'),
+        editItemCategory: document.getElementById('editItemCategory'),
+        editItemPrice: document.getElementById('editItemPrice'),
+        editItemCurrency: document.getElementById('editItemCurrency'),
+        editItemDescription: document.getElementById('editItemDescription'),
+        editItemImage: document.getElementById('editItemImage'),
+        extrasContainer: document.getElementById('extrasContainer'),
+        editMenuItemModal: document.getElementById('editMenuItemModal')
     };
     
     // Ensure login container is properly initialized
@@ -87,6 +100,13 @@ function initializeElements() {
     } else {
         console.error("Login container not found!");
     }
+
+    // Verify all required elements exist
+    Object.entries(elements).forEach(([key, element]) => {
+        if (!element) {
+            console.error(`Required element not found: ${key}`);
+        }
+    });
 }
 
 // Setup event listeners
@@ -723,45 +743,34 @@ async function editMenuItem(item) {
     }
 
     try {
-        // Get all required elements first
-        const editItemId = document.getElementById('editItemId');
-        const editItemName = document.getElementById('editItemName');
-        const editItemNameEn = document.getElementById('editItemNameEn');
-        const editItemCategory = document.getElementById('editItemCategory');
-        const editItemPrice = document.getElementById('editItemPrice');
-        const editItemCurrency = document.getElementById('editItemCurrency');
-        const editItemDescription = document.getElementById('editItemDescription');
-        const editItemImage = document.getElementById('editItemImage');
-        const extrasContainer = document.getElementById('extrasContainer');
-        const editMenuItemModal = document.getElementById('editMenuItemModal');
-
         // Check if all required elements exist
-        if (!editItemId || !editItemName || !editItemNameEn || !editItemCategory || 
-            !editItemPrice || !editItemCurrency || !editItemDescription || 
-            !editItemImage || !extrasContainer || !editMenuItemModal) {
+        if (!elements.editItemId || !elements.editItemName || !elements.editItemNameEn || 
+            !elements.editItemCategory || !elements.editItemPrice || !elements.editItemCurrency || 
+            !elements.editItemDescription || !elements.editItemImage || !elements.extrasContainer || 
+            !elements.editMenuItemModal) {
             console.error('Required form elements not found');
             showAlert('Failed to edit menu item: Form elements not found', 'danger');
             return;
         }
 
         // Set form values
-        editItemId.value = item.id;
-        editItemName.value = item.name || '';
-        editItemNameEn.value = item.nameEn || '';
-        editItemCategory.value = item.categoryId || '';
-        editItemPrice.value = item.price || '';
-        editItemCurrency.value = item.currency || 'ILS';
-        editItemDescription.value = item.description || '';
-        editItemImage.value = item.image || '';
+        elements.editItemId.value = item.id;
+        elements.editItemName.value = item.name || '';
+        elements.editItemNameEn.value = item.nameEn || '';
+        elements.editItemCategory.value = item.categoryId || '';
+        elements.editItemPrice.value = item.price || '';
+        elements.editItemCurrency.value = item.currency || 'ILS';
+        elements.editItemDescription.value = item.description || '';
+        elements.editItemImage.value = item.image || '';
 
         // Clear and populate extras
-        extrasContainer.innerHTML = '';
+        elements.extrasContainer.innerHTML = '';
         if (item.extras && Array.isArray(item.extras)) {
             item.extras.forEach(extra => addExtraField('extrasContainer', extra));
         }
 
         // Show the modal
-        new bootstrap.Modal(editMenuItemModal).show();
+        new bootstrap.Modal(elements.editMenuItemModal).show();
     } catch (error) {
         console.error('Error in editMenuItem:', error);
         showAlert('Failed to edit menu item: ' + error.message, 'danger');
@@ -992,26 +1001,21 @@ function showAlert(message, type = 'info') {
 // Bulk category update functions
 function openBulkCategoryUpdate(categoryId) {
     try {
-        // Get all required elements first
-        const bulkCategoryId = document.getElementById('bulkCategoryId');
-        const bulkExtrasContainer = document.getElementById('bulkExtrasContainer');
-        const bulkCategoryUpdateModal = document.getElementById('bulkCategoryUpdateModal');
-
         // Check if all required elements exist
-        if (!bulkCategoryId || !bulkExtrasContainer || !bulkCategoryUpdateModal) {
+        if (!elements.bulkCategoryId || !elements.bulkExtrasContainer || !elements.bulkCategoryUpdateModal) {
             console.error('Required elements for bulk update not found');
             showAlert('Failed to open bulk update: Required elements not found', 'danger');
             return;
         }
 
         // Set the category ID
-        bulkCategoryId.value = categoryId;
+        elements.bulkCategoryId.value = categoryId;
 
         // Clear any existing extras
-        bulkExtrasContainer.innerHTML = '';
+        elements.bulkExtrasContainer.innerHTML = '';
 
         // Show the modal
-        new bootstrap.Modal(bulkCategoryUpdateModal).show();
+        new bootstrap.Modal(elements.bulkCategoryUpdateModal).show();
     } catch (error) {
         console.error('Error in openBulkCategoryUpdate:', error);
         showAlert('Failed to open bulk update: ' + error.message, 'danger');
