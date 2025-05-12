@@ -712,8 +712,12 @@ async function generateAllpayPaymentUrl(paymentData) {
             currency: 'ILS',
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
-            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
-            backlink_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+            success_url: process.env.NODE_ENV === 'production'
+              ? 'https://vanillo.onrender.com/payment/success'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+            backlink_url: process.env.NODE_ENV === 'production'
+              ? 'https://vanillo.onrender.com/payment/cancel'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
             expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour
         };
 
@@ -1152,9 +1156,13 @@ app.post('/api/checkout', async (req, res) => {
             currency: 'ILS',
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
-            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
-            backlink_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
-            expire: Math.floor(Date.now() / 1000) + 3600 // 1 hour expiration
+            success_url: process.env.NODE_ENV === 'production'
+              ? 'https://vanillo.onrender.com/payment/success'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+            backlink_url: process.env.NODE_ENV === 'production'
+              ? 'https://vanillo.onrender.com/payment/cancel'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+            expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour
         };
 
         console.log('Allpay request:', JSON.stringify(request, null, 2));

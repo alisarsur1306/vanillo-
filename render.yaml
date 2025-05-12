@@ -16,5 +16,11 @@ services:
         generateValue: true
       - key: ALLOW_FILE_SYSTEM
         value: "true"
+      - key: ALLPAY_LOGIN
+        sync: false
+      - key: ALLPAY_KEY
+        sync: false
+      - key: API_BASE_URL
+        value: https://vanillo.onrender.com
     healthCheckPath: /
     autoDeploy: true 
