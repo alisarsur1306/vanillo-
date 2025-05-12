@@ -38,7 +38,7 @@
             color: #666;
             margin-bottom: 30px;
         }
-        .home-button {
+        .tracker-button {
             background-color: #007bff;
             color: white;
             padding: 12px 24px;
@@ -48,7 +48,7 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .home-button:hover {
+        .tracker-button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -62,8 +62,27 @@
                 Thank you for your payment. Your order has been confirmed and is being processed.
                 You will receive an order confirmation shortly.
             </p>
-            <button class="home-button" onclick="window.location.href='/'">Return to Home</button>
+            <button class="tracker-button" onclick="redirectToOrderTracker()">View Order Status</button>
         </div>
     </div>
+
+    <script>
+        function redirectToOrderTracker() {
+            // Get the order ID from the URL if it exists
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            
+            if (orderId) {
+                // Redirect to the specific order tracker
+                window.location.href = `/orders.html?orderId=${orderId}`;
+            } else {
+                // If no order ID, redirect to the orders page
+                window.location.href = '/orders.html';
+            }
+        }
+
+        // Automatically redirect after 5 seconds
+        setTimeout(redirectToOrderTracker, 5000);
+    </script>
 </body>
 </html> 

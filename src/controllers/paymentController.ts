@@ -36,8 +36,8 @@ export const paymentController = {
         lang,
         notifications_url: `${process.env.API_BASE_URL}/api/payments/notify`,
         success_url: process.env.NODE_ENV === 'production' 
-          ? 'https://vanillo.onrender.com/payment/success.html'
-          : `${process.env.FRONTEND_URL}/payment/success.html`,
+          ? `https://vanillo.onrender.com/payment/success.html?orderId=${order_id}`
+          : `${process.env.FRONTEND_URL}/payment/success.html?orderId=${order_id}`,
         backlink_url: process.env.NODE_ENV === 'production'
           ? 'https://vanillo.onrender.com/payment/cancel.html'
           : `${process.env.FRONTEND_URL}/payment/cancel.html`,
