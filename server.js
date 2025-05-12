@@ -713,8 +713,8 @@ async function generateAllpayPaymentUrl(paymentData) {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? `https://vanillo.onrender.com/payment/hosted-fields.html?orderId=${request.order_id}`
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/hosted-fields.html?orderId=${request.order_id}`,
+              ? 'https://vanillo.onrender.com/payment/success.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html`,
             backlink_url: process.env.NODE_ENV === 'production'
               ? 'https://vanillo.onrender.com/payment/cancel.html'
               : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
@@ -1157,8 +1157,8 @@ app.post('/api/checkout', async (req, res) => {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? `https://vanillo.onrender.com/payment/hosted-fields.html?orderId=${request.order_id}`
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/hosted-fields.html?orderId=${request.order_id}`,
+              ? 'https://vanillo.onrender.com/payment/success.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html`,
             backlink_url: process.env.NODE_ENV === 'production'
               ? 'https://vanillo.onrender.com/payment/cancel.html'
               : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
@@ -1243,6 +1243,59 @@ app.post('/api/checkout', async (req, res) => {
             } : null
         });
         res.status(500).json({ error: 'Error processing checkout', details: error.message });
+    }
+});
+
+// API endpoint to delete all orders
+app.delete('/api/orders', (req, res) => {
+    console.log('Deleting all orders');
+    
+    try {
+        const ordersDir = path.join(__dirname, 'orders');
+        if (!fs.existsSync(ordersDir)) {
+            return res.json({ 
+                success: true, 
+                message: 'No orders to delete' 
+            });
+        }
+        
+        const orderFiles = fs.readdirSync(ordersDir)
+            .filter(file => file.endsWith('.json'));
+            
+        // Delete each order file
+        orderFiles.forEach(file => {
+            const orderFile = path.join(ordersDir, file);
+            fs.unlinkSync(orderFile);
+            
+            // Clear any active timer for this order
+            const orderId = file.replace('order-', '').replace('.json', '');
+            if (activeTimers.has(orderId)) {
+                clearInterval(activeTimers.get(orderId));
+                activeTimers.delete(orderId);
+            }
+        });
+        
+        console.log(`Deleted ${orderFiles.length} orders`);
+        
+        // Broadcast the deletion to all connected clients
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({ 
+                    type: 'all_orders_deleted'
+                }));
+            }
+        });
+        
+        res.json({ 
+            success: true, 
+            message: `Successfully deleted ${orderFiles.length} orders`
+        });
+    } catch (error) {
+        console.error('Error deleting all orders:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to delete orders' 
+        });
     }
 });
 
