@@ -764,6 +764,147 @@
             console.log('Opening cart to verify display...');
             toggleCart();
         });
+
+        // Payment handling
+        async function handlePayment() {
+            try {
+                const cartItems = getCartItems();
+                if (cartItems.length === 0) {
+                    alert('העגלה ריקה');
+                    return;
+                }
+
+                // Get customer information
+                const customerInfo = {
+                    name: document.getElementById('customerName').value,
+                    email: document.getElementById('customerEmail').value,
+                    phone: document.getElementById('customerPhone').value
+                };
+
+                // Validate customer information
+                if (!customerInfo.name || !customerInfo.phone) {
+                    alert('אנא מלא את כל השדות החובה');
+                    return;
+                }
+
+                // Create order
+                const order = {
+                    items: cartItems,
+                    customer: customerInfo,
+                    total: calculateTotal(),
+                    paymentMethod: 'credit_card',
+                    deliveryType: 'delivery',
+                    timestamp: new Date().toISOString()
+                };
+
+                console.log('Submitting order:', order);
+
+                // Submit order with retry logic
+                let retries = 3;
+                let lastError = null;
+
+                while (retries > 0) {
+                    try {
+                        const orderResponse = await fetch('/api/orders', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(order)
+                        });
+
+                        if (!orderResponse.ok) {
+                            const errorData = await orderResponse.json();
+                            throw new Error(errorData.error || 'Failed to submit order');
+                        }
+
+                        const orderResult = await orderResponse.json();
+                        console.log('Order submitted successfully:', orderResult);
+
+                        if (orderResult.paymentUrl) {
+                            // Redirect to Allpay payment page
+                            window.location.href = orderResult.paymentUrl;
+                        } else {
+                            throw new Error('No payment URL received');
+                        }
+                        return; // Success, exit the function
+                    } catch (error) {
+                        console.error(`Attempt ${4 - retries} failed:`, error);
+                        lastError = error;
+                        retries--;
+                        if (retries > 0) {
+                            // Wait for 1 second before retrying
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+
+                // If we get here, all retries failed
+                throw lastError;
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('אירעה שגיאה בתשלום. אנא נסה שוב או פנה לתמיכה.');
+            }
+        }
+
+        // Helper function to calculate total
+        function calculateTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+
+        // Helper function to get cart items
+        function getCartItems() {
+            return cart.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity
+            }));
+        }
+
+        function initWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsPort = window.location.port || '3002';
+            const wsUrl = `${wsProtocol}//${window.location.hostname}:${wsPort}/ws`;
+            
+            console.log('Connecting to WebSocket:', wsUrl);
+            
+            const ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connection established');
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+                // Try to reconnect after 5 seconds
+                setTimeout(initWebSocket, 5000);
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Received WebSocket message:', data);
+                    
+                    if (data.type === 'order_update') {
+                        // Handle order updates
+                        updateOrderDisplay(data.data);
+                    }
+                } catch (error) {
+                    console.error('Error processing WebSocket message:', error);
+                }
+            };
+            
+            return ws;
+        }
+
+        // Initialize WebSocket connection when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.ws = initWebSocket();
+        });
     </script>
 </body>
 </html>

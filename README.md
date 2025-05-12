@@ -63,4 +63,69 @@ This project is configured for deployment on Render.com. See `render.yaml` for c
 
 ## License
 
-MIT License 
+MIT License
+
+# Allpay Payment Integration
+
+This project integrates Allpay as the payment gateway for handling credit card payments.
+
+## Setup Instructions
+
+1. Create a `.env` file in the root directory with the following variables:
+```env
+# Allpay Configuration
+ALLPAY_API_LOGIN=your_api_login
+ALLPAY_API_KEY=your_api_key
+
+# Application URLs
+API_BASE_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3001
+```
+
+2. Get your Allpay API credentials:
+   - Sign up for an Allpay account at https://www.allpay.co.il
+   - Go to Settings > API Integrations
+   - Copy your API login and key
+
+3. Install dependencies:
+```bash
+npm install
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+## Payment Flow
+
+1. User adds items to cart
+2. User proceeds to checkout
+3. User fills in their details in the payment form
+4. User is redirected to Allpay's secure payment page
+5. After successful payment, user is redirected back to the success page
+6. If payment is cancelled, user is redirected to the cancel page
+
+## API Endpoints
+
+- `POST /api/payments/initiate` - Initiates a new payment
+- `POST /api/payments/notify` - Handles payment notifications from Allpay
+
+## Security
+
+- All API calls are signed using SHA256
+- Payment notifications are verified using the signature
+- Sensitive data is never stored on our servers
+- All communication with Allpay is done over HTTPS
+
+## Testing
+
+For testing payments, use the following test cards:
+
+- Visa: 4557430402053431
+- MasterCard: 5326105300985846
+- AmEx: 375516193000090
+
+Use any future date as the expiration date and any three digits for the CVV.
+
+To simulate a failed payment, use: 4000000000000002 

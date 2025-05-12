@@ -40,6 +40,11 @@ const CheckoutScreen = () => {
       name: '',
     },
   });
+  const [customerInfo, setCustomerInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
 
   const orderSummary = checkoutService.calculateOrderSummary(deliveryType);
 
@@ -57,6 +62,10 @@ const CheckoutScreen = () => {
         },
       }));
     }
+  };
+
+  const handleCustomerInfoChange = (field: string, value: string) => {
+    setCustomerInfo(prev => ({ ...prev, [field]: value }));
   };
 
   const validateForm = (): boolean => {
@@ -81,23 +90,20 @@ const CheckoutScreen = () => {
 
     try {
       setLoading(true);
-      
-      // Process payment first
+      // Create the order first
+      const orderId = await checkoutService.createOrder(address, paymentMethod, deliveryType);
+      // Process payment with orderId and customer info
       const paymentSuccess = await checkoutService.processPayment(
         paymentMethod,
-        orderSummary.total
+        orderSummary.total,
+        orderId,
+        customerInfo
       );
-
       if (!paymentSuccess) {
         throw new Error('Payment failed');
       }
-
-      // Create the order
-      const orderId = await checkoutService.createOrder(address, paymentMethod, deliveryType);
-
       // Clear the cart
       cartService.clearCart();
-
       // Navigate to order confirmation
       navigation.replace('OrderConfirmation', { orderId });
     } catch (error) {
@@ -239,6 +245,31 @@ const CheckoutScreen = () => {
               />
             </>
           )}
+        </View>
+
+        {/* Customer Information Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Customer Information</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Full Name"
+            value={customerInfo.name}
+            onChangeText={(value) => handleCustomerInfoChange('name', value)}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={customerInfo.email}
+            onChangeText={(value) => handleCustomerInfoChange('email', value)}
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Phone Number"
+            value={customerInfo.phone}
+            onChangeText={(value) => handleCustomerInfoChange('phone', value)}
+            keyboardType="phone-pad"
+          />
         </View>
 
         {/* Order Summary Section */}

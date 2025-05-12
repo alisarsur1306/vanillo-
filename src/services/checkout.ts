@@ -1,5 +1,6 @@
 import { api } from './api';
 import { cartService } from './cart';
+import { hypayService } from './hypay';
 
 export interface DeliveryAddress {
   street: string;
@@ -86,12 +87,29 @@ class CheckoutService {
     }
   }
 
-  async processPayment(paymentMethod: PaymentMethod, amount: number): Promise<boolean> {
+  async processPayment(paymentMethod: PaymentMethod, amount: number, orderId: string, customerInfo: { name: string; email: string; phone: string; }): Promise<boolean> {
     try {
-      // In a real app, this would integrate with a payment processor like Stripe
-      // For now, we'll simulate a successful payment
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return true;
+      if (paymentMethod.type === 'card') {
+        // Initiate Hypay payment
+        const paymentUrl = await hypayService.initiatePayment({
+          amount,
+          currency: 'ILS',
+          orderId,
+          customerName: customerInfo.name,
+          customerEmail: customerInfo.email,
+          customerPhone: customerInfo.phone,
+          description: `Order #${orderId}`,
+          successUrl: window.location.origin + '/order-success.html',
+          failureUrl: window.location.origin + '/order-failure.html',
+          cancelUrl: window.location.origin + '/checkout.html',
+        });
+        // Redirect to Hypay payment page
+        window.location.href = paymentUrl;
+        return true;
+      } else {
+        // For cash payments, just return true
+        return true;
+      }
     } catch (error) {
       console.error('Error processing payment:', error);
       throw new Error('Payment failed. Please try again.');
