@@ -13,13 +13,6 @@ const { menuData, restaurantInfo } = require('./menu-data.js');
 const axios = require('axios');
 const crypto = require('crypto');
 
-// Allpay configuration
-const ALLPAY_CONFIG = {
-    apiUrl: 'https://secure.allpay.co.il/api/v1/payments',
-    apiLogin: process.env.ALLPAY_LOGIN,
-    apiKey: process.env.ALLPAY_KEY
-};
-
 // Authentication configuration
 const USERS = {
     admin: {
@@ -36,8 +29,13 @@ const USERS = {
 
 // Create sessions directory if it doesn't exist
 const sessionsDir = path.join(__dirname, 'sessions');
-if (!fs.existsSync(sessionsDir)) {
-    fs.mkdirSync(sessionsDir, { recursive: true });
+try {
+    if (!fs.existsSync(sessionsDir)) {
+        fs.mkdirSync(sessionsDir, { recursive: true, mode: 0o755 });
+    }
+} catch (error) {
+    console.error('Error creating sessions directory:', error);
+    // Continue without file-based sessions if directory creation fails
 }
 
 // Session configuration
@@ -45,11 +43,16 @@ app.use(session({
     store: new FileStore({
         path: sessionsDir,
         ttl: 24 * 60 * 60, // 24 hours
-        reapInterval: 60 * 60 // Clean up expired sessions every hour
+        reapInterval: 60 * 60, // Clean up expired sessions every hour
+        retries: 3, // Add retry logic
+        secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
+        logFn: function(message) {
+            console.log('[Session]', message);
+        }
     }),
     secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
-    resave: true,
-    saveUninitialized: true,
+    resave: false, // Changed to false to reduce file system operations
+    saveUninitialized: false, // Changed to false to reduce file system operations
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -206,80 +209,29 @@ function broadcastOrders() {
 function loadMenuData() {
     try {
         const menuDataPath = path.join(__dirname, 'menu-data.json');
-        const backupPath = path.join(__dirname, 'menu-data.backup.json');
-        
-        // First try to load from the main JSON file
         if (fs.existsSync(menuDataPath)) {
-            const existingData = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
-            
-            // Validate the data structure
-            if (existingData && existingData.categories && existingData.items) {
-                Object.assign(menuData, existingData);
-                console.log('Menu data loaded from existing JSON file');
-                
-                // Create a backup of the valid data
-                fs.writeFileSync(backupPath, JSON.stringify(existingData, null, 4));
-                return;
-            }
+            const data = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
+            Object.assign(menuData, data);
+            console.log('Menu data loaded from JSON file');
+        } else {
+            // If JSON file doesn't exist, create it from the module
+            const { menuData: moduleData } = require('./menu-data.js');
+            fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
+            Object.assign(menuData, moduleData);
+            console.log('Created menu-data.json from module');
         }
-        
-        // If main file is invalid or doesn't exist, try the backup
-        if (fs.existsSync(backupPath)) {
-            const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
-            if (backupData && backupData.categories && backupData.items) {
-                Object.assign(menuData, backupData);
-                // Restore the backup to the main file
-                fs.writeFileSync(menuDataPath, JSON.stringify(backupData, null, 4));
-                console.log('Menu data restored from backup');
-                return;
-            }
-        }
-        
-        // If both files are invalid or don't exist, create from module
-        const { menuData: moduleData } = require('./menu-data.js');
-        fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
-        fs.writeFileSync(backupPath, JSON.stringify(moduleData, null, 4));
-        Object.assign(menuData, moduleData);
-        console.log('Created new menu-data.json from module');
     } catch (error) {
         console.error('Error loading menu data:', error);
-        // Try to load from module as fallback
-        try {
-            const { menuData: moduleData } = require('./menu-data.js');
-            Object.assign(menuData, moduleData);
-            console.log('Loaded menu data from module as fallback');
-        } catch (fallbackError) {
-            console.error('Failed to load menu data from module:', fallbackError);
-        }
     }
 }
 
 // Load menu data on server start
 loadMenuData();
 
-// Function to create a backup of menu data
-function backupMenuData() {
-    try {
-        const menuDataPath = path.join(__dirname, 'menu-data.json');
-        const backupPath = path.join(__dirname, 'menu-data.backup.json');
-        
-        if (fs.existsSync(menuDataPath)) {
-            const data = fs.readFileSync(menuDataPath, 'utf8');
-            fs.writeFileSync(backupPath, data);
-            console.log('Menu data backup created successfully');
-        }
-    } catch (error) {
-        console.error('Error creating menu data backup:', error);
-    }
-}
-
 // API endpoint to update menu data
 app.put('/api/menu', (req, res) => {
     console.log('Received request to update menu data:', req.body);
     try {
-        // Create backup before updating
-        backupMenuData();
-        
         // Update the in-memory menu data
         const { categories, items } = req.body;
         
@@ -311,10 +263,6 @@ app.put('/api/menu', (req, res) => {
         // Write the updated data to menu-data.json
         const menuDataPath = path.join(__dirname, 'menu-data.json');
         fs.writeFileSync(menuDataPath, JSON.stringify(menuData, null, 4));
-        
-        // Create a new backup after successful update
-        backupMenuData();
-        
         console.log('Menu data updated successfully');
         
         res.json({ 
@@ -619,9 +567,30 @@ app.post('/api/orders', async (req, res) => {
         const order = req.body;
         const orderId = Date.now().toString();
         
-        // Create order file
-        const orderFile = path.join(ordersDir, `order-${orderId}.json`);
-        fs.writeFileSync(orderFile, JSON.stringify(order, null, 2));
+        // Ensure orders directory exists with proper permissions
+        try {
+            if (!fs.existsSync(ordersDir)) {
+                fs.mkdirSync(ordersDir, { recursive: true, mode: 0o755 });
+            }
+        } catch (dirError) {
+            console.error('Error creating orders directory:', dirError);
+            return res.status(500).json({ 
+                error: 'Server configuration error',
+                details: 'Unable to create orders directory'
+            });
+        }
+
+        // Create order file with error handling
+        try {
+            const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+            fs.writeFileSync(orderFile, JSON.stringify(order, null, 2), { mode: 0o644 });
+        } catch (writeError) {
+            console.error('Error writing order file:', writeError);
+            return res.status(500).json({ 
+                error: 'Failed to save order',
+                details: 'Unable to write order data'
+            });
+        }
 
         // If payment method is credit card, generate Allpay payment URL
         if (order.paymentMethod === 'credit_card') {
@@ -636,7 +605,10 @@ app.post('/api/orders', async (req, res) => {
                 });
             } catch (err) {
                 console.error('[Allpay] Error generating payment URL:', err);
-                res.status(500).json({ error: 'Failed to generate payment URL', details: err.message });
+                res.status(500).json({ 
+                    error: 'Failed to generate payment URL', 
+                    details: err.message 
+                });
             }
         } else {
             res.json({ 
@@ -646,9 +618,19 @@ app.post('/api/orders', async (req, res) => {
         }
     } catch (error) {
         console.error('Error creating order:', error);
-        res.status(500).json({ error: 'Failed to create order' });
+        res.status(500).json({ 
+            error: 'Failed to create order',
+            details: error.message
+        });
     }
 });
+
+// Allpay configuration
+const ALLPAY_CONFIG = {
+    apiLogin: 'pp1009681',
+    apiKey: 'B139E36C2D7BC6D0AE615360588D929A',
+    apiUrl: 'https://allpay.to/app/?show=getpayment&mode=api8'
+};
 
 // Generate Allpay signature
 function generateAllpaySignature(params, apiKey) {
