@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Cancelled - Vanillo</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .cancel-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .cancel-content {
+            text-align: center;
+            max-width: 500px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .cancel-icon {
+            color: #dc3545;
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        .cancel-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .cancel-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .home-button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .home-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="cancel-container">
+        <div class="cancel-content">
+            <div class="cancel-icon">✕</div>
+            <h1 class="cancel-title">Payment Cancelled</h1>
+            <p class="cancel-message">
+                Your payment has been cancelled. No charges have been made to your account.
+                If you would like to try again, please return to the checkout page.
+            </p>
+            <button class="home-button" onclick="window.location.href='/'">Return to Home</button>
+        </div>
+    </div>
+</body>
+</html> 

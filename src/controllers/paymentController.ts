@@ -36,11 +36,11 @@ export const paymentController = {
         lang,
         notifications_url: `${process.env.API_BASE_URL}/api/payments/notify`,
         success_url: process.env.NODE_ENV === 'production' 
-          ? 'https://vanillo.onrender.com/payment/success'
-          : `${process.env.FRONTEND_URL}/payment/success`,
+          ? 'https://vanillo.onrender.com/payment/success.html'
+          : `${process.env.FRONTEND_URL}/payment/success.html`,
         backlink_url: process.env.NODE_ENV === 'production'
-          ? 'https://vanillo.onrender.com/payment/cancel'
-          : `${process.env.FRONTEND_URL}/payment/cancel`,
+          ? 'https://vanillo.onrender.com/payment/cancel.html'
+          : `${process.env.FRONTEND_URL}/payment/cancel.html`,
         show_applepay: false,
         show_bit: false,
         expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour

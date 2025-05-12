@@ -713,11 +713,11 @@ async function generateAllpayPaymentUrl(paymentData) {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? 'https://vanillo.onrender.com/payment/success'
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+              ? 'https://vanillo.onrender.com/payment/success.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html`,
             backlink_url: process.env.NODE_ENV === 'production'
-              ? 'https://vanillo.onrender.com/payment/cancel'
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+              ? 'https://vanillo.onrender.com/payment/cancel.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
             expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour
         };
 
@@ -1157,11 +1157,11 @@ app.post('/api/checkout', async (req, res) => {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? 'https://vanillo.onrender.com/payment/success'
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+              ? 'https://vanillo.onrender.com/payment/success.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html`,
             backlink_url: process.env.NODE_ENV === 'production'
-              ? 'https://vanillo.onrender.com/payment/cancel'
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+              ? 'https://vanillo.onrender.com/payment/cancel.html'
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
             expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour
         };
 
