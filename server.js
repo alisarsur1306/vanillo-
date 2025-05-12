@@ -713,8 +713,8 @@ async function generateAllpayPaymentUrl(paymentData) {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? `https://vanillo.onrender.com/payment/success.html?orderId=${request.order_id}`
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html?orderId=${request.order_id}`,
+              ? `https://vanillo.onrender.com/payment/hosted-fields.html?orderId=${request.order_id}`
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/hosted-fields.html?orderId=${request.order_id}`,
             backlink_url: process.env.NODE_ENV === 'production'
               ? 'https://vanillo.onrender.com/payment/cancel.html'
               : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
@@ -1157,8 +1157,8 @@ app.post('/api/checkout', async (req, res) => {
             lang: 'HE',
             notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
             success_url: process.env.NODE_ENV === 'production'
-              ? `https://vanillo.onrender.com/payment/success.html?orderId=${request.order_id}`
-              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success.html?orderId=${request.order_id}`,
+              ? `https://vanillo.onrender.com/payment/hosted-fields.html?orderId=${request.order_id}`
+              : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/hosted-fields.html?orderId=${request.order_id}`,
             backlink_url: process.env.NODE_ENV === 'production'
               ? 'https://vanillo.onrender.com/payment/cancel.html'
               : `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel.html`,
