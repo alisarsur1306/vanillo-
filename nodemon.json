@@ -1,0 +1,12 @@
+{
+  "ignore": [
+    "sessions/*",
+    "orders/*",
+    "*.json",
+    "node_modules/*"
+  ],
+  "watch": [
+    "server.js"
+  ],
+  "ext": "js"
+} 

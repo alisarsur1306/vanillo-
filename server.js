@@ -1,14 +1,17 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const http = require('http');
 const WebSocket = require('ws');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const { menuData, restaurantInfo } = require('./menu-data.js');
+const axios = require('axios');
+const crypto = require('crypto');
 
 // Authentication configuration
 const USERS = {
@@ -62,6 +65,42 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'public', 'images')));
+
+// Place the real /api/payment handler here
+app.post('/api/payment', async (req, res) => {
+    try {
+        const items = req.body.items;
+        const client_name = req.body.client_name || req.body.customer?.name || '';
+        const client_email = req.body.client_email || req.body.customer?.email || '';
+        const client_phone = req.body.client_phone || req.body.customer?.phone || '';
+        const order_id = 'ORDER_' + Date.now();
+        const request = {
+            items,
+            login: process.env.ALLPAY_LOGIN || ALLPAY_CONFIG.apiLogin,
+            order_id,
+            currency: 'ILS',
+            lang: 'HE',
+            notifications_url: process.env.API_BASE_URL ? `${process.env.API_BASE_URL}/api/payment/notify` : 'http://localhost:3002/api/payment/notify',
+            client_name,
+            client_email,
+            client_phone,
+            expire: Math.floor(Date.now() / 1000) + 3600
+        };
+        request.sign = generateAllpaySignature(request, process.env.ALLPAY_KEY || ALLPAY_CONFIG.apiKey);
+
+        const response = await axios.post(ALLPAY_CONFIG.apiUrl, request, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.data && response.data.payment_url) {
+            res.json({ payment_url: response.data.payment_url });
+        } else {
+            res.status(400).json({ error: 'No payment link found', data: response.data });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Error when submitting request', details: error.message });
+    }
+});
 
 // Authentication middleware
 const requireAuth = (req, res, next) => {
@@ -513,7 +552,7 @@ function handleOrderTimer(orderId, prepTime) {
 }
 
 // API endpoint to submit orders
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
     try {
         const order = req.body;
         const orderId = Date.now().toString();
@@ -521,54 +560,193 @@ app.post('/api/orders', (req, res) => {
         // Create order file
         const orderFile = path.join(ordersDir, `order-${orderId}.json`);
         fs.writeFileSync(orderFile, JSON.stringify(order, null, 2));
-        
-        res.json({ success: true, orderId });
+
+        // If payment method is credit card, generate Allpay payment URL
+        if (order.paymentMethod === 'credit_card') {
+            console.log('[Allpay] Attempting to generate payment URL for order:', orderId);
+            try {
+                const paymentUrl = await generateAllpayPaymentUrl(order);
+                console.log('[Allpay] Payment URL generated:', paymentUrl);
+                res.json({ 
+                    success: true, 
+                    orderId,
+                    paymentUrl 
+                });
+            } catch (err) {
+                console.error('[Allpay] Error generating payment URL:', err);
+                res.status(500).json({ error: 'Failed to generate payment URL', details: err.message });
+            }
+        } else {
+            res.json({ 
+                success: true, 
+                orderId 
+            });
+        }
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ error: 'Failed to create order' });
     }
 });
 
-// Function to migrate timestamp-based orders to numeric IDs
-function migrateTimestampOrders() {
-    const ordersDir = path.join(__dirname, 'orders');
-    if (!fs.existsSync(ordersDir)) return;
-    
-    const orderFiles = fs.readdirSync(ordersDir);
-    let migrated = false;
-    
-    for (const file of orderFiles) {
-        if (!file.endsWith('.json')) continue;
-        
-        // Skip if file already has numeric ID format
-        if (file.match(/order-\d+\.json/)) continue;
-        
-        const filePath = path.join(ordersDir, file);
-        const orderData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-        
-        // Generate new numeric ID
-        const newId = getNextOrderId();
-        const newFileName = `order-${newId}.json`;
-        const newFilePath = path.join(ordersDir, newFileName);
-        
-        // Update order data with new ID and remove timestamp
-        orderData.id = newId;
-        delete orderData.timestamp;
-        
-        // Save with new filename
-        fs.writeFileSync(newFilePath, JSON.stringify(orderData, null, 2));
-        
-        // Delete old file
-        fs.unlinkSync(filePath);
-        
-        migrated = true;
-        console.log(`Migrated order from ${file} to ${newFileName}`);
-    }
-    
-    if (migrated) {
-        console.log('Order migration completed');
+// Allpay configuration
+const ALLPAY_CONFIG = {
+    apiLogin: 'pp1009681',
+    apiKey: 'B139E36C2D7BC6D0AE615360588D929A',
+    apiUrl: 'https://allpay.to/app/?show=getpayment&mode=api8'
+};
+
+// Generate Allpay signature
+function generateAllpaySignature(params, apiKey) {
+    try {
+        // Create a copy of params without the sign parameter
+        const paramsCopy = { ...params };
+        delete paramsCopy.sign;
+
+        // Sort parameters alphabetically
+        const sortedKeys = Object.keys(paramsCopy).sort();
+        const chunks = [];
+
+        sortedKeys.forEach((key) => {
+            const value = paramsCopy[key];
+
+            if (Array.isArray(value)) {
+                // Handle items array
+                value.forEach((item) => {
+                    if (typeof item === 'object' && item !== null) {
+                        // Sort item properties alphabetically
+                        const sortedItemKeys = Object.keys(item).sort();
+                        sortedItemKeys.forEach((itemKey) => {
+                            const itemValue = item[itemKey];
+                            if (typeof itemValue === 'string' && itemValue.trim() !== '') {
+                                chunks.push(itemValue);
+                            } else if (typeof itemValue === 'number') {
+                                chunks.push(String(itemValue));
+                            }
+                        });
+                    }
+                });
+            } else if (typeof value === 'string' && value.trim() !== '') {
+                chunks.push(value);
+            } else if (typeof value === 'number') {
+                chunks.push(String(value));
+            }
+        });
+
+        const signatureString = chunks.join(':') + ':' + apiKey;
+        console.log('Signature string:', signatureString);
+
+        return crypto
+            .createHash('sha256')
+            .update(signatureString)
+            .digest('hex');
+    } catch (error) {
+        console.error('Error generating signature:', error);
+        throw error;
     }
 }
+
+// Generate Allpay payment URL
+async function generateAllpayPaymentUrl(paymentData) {
+    try {
+        console.log('Generating Allpay payment URL with data:', paymentData);
+        
+        // Validate required fields
+        if (!paymentData.items || !Array.isArray(paymentData.items) || paymentData.items.length === 0) {
+            throw new Error('Invalid or missing items in payment data');
+        }
+
+        if (!paymentData.customer || !paymentData.customer.name || !paymentData.customer.phone) {
+            throw new Error('Invalid or missing customer information');
+        }
+
+        // Prepare the request with exact parameter order as per Allpay documentation
+        const request = {
+            login: ALLPAY_CONFIG.apiLogin,
+            items: paymentData.items.map(item => ({
+                name: item.name,
+                price: item.price,
+                qty: item.quantity || 1,
+                vat: 1 // 18% VAT included
+            })),
+            order_id: paymentData.orderId || `ORDER_${Date.now()}`,
+            client_name: paymentData.customer.name,
+            client_email: paymentData.customer.email || '',
+            client_phone: paymentData.customer.phone,
+            currency: 'ILS',
+            lang: 'HE',
+            notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
+            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+            backlink_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+            expire: Math.floor(Date.now() / 1000) + 3600 // Link expires in 1 hour
+        };
+
+        console.log('Allpay request:', request);
+
+        // Generate signature
+        const sign = generateAllpaySignature(request, ALLPAY_CONFIG.apiKey);
+        const requestWithSign = { ...request, sign };
+
+        console.log('Sending request to Allpay with signature:', sign);
+        console.log('Full request with signature:', JSON.stringify(requestWithSign, null, 2));
+
+        // Send request to Allpay
+        const response = await axios.post(ALLPAY_CONFIG.apiUrl, requestWithSign, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        console.log('Allpay response:', response.data);
+
+        if (!response.data || !response.data.payment_url) {
+            throw new Error('Invalid response from Allpay');
+        }
+
+        return response.data.payment_url;
+    } catch (error) {
+        console.error('Error generating Allpay payment URL:', error);
+        throw new Error('Failed to generate payment URL: ' + error.message);
+    }
+}
+
+// Payment notification endpoint
+app.post('/api/payment/notify', async (req, res) => {
+    try {
+        console.log('Received payment notification:', req.body);
+        
+        // Generate signature for verification
+        const calculatedSign = generateAllpaySignature(req.body, ALLPAY_CONFIG.apiKey);
+        console.log('Calculated signature:', calculatedSign);
+        console.log('Received signature:', req.body.sign);
+        
+        // Verify signature and status
+        if (req.body.status === 1 && calculatedSign === req.body.sign) {
+            console.log('Payment verified successfully');
+            const { order_id } = req.body;
+            
+            // Update order status
+            const orderPath = path.join(ordersDir, `order-${order_id}.json`);
+            if (fs.existsSync(orderPath)) {
+                const order = JSON.parse(fs.readFileSync(orderPath, 'utf8'));
+                order.status = 'paid';
+                fs.writeFileSync(orderPath, JSON.stringify(order, null, 2));
+                broadcastOrders(); // Notify all connected clients
+            }
+            
+            res.status(200).json({ received: true });
+        } else {
+            console.error('Invalid payment notification:', {
+                status: req.body.status,
+                signatureMatch: calculatedSign === req.body.sign
+            });
+            res.status(400).json({ error: 'Invalid payment notification' });
+        }
+    } catch (error) {
+        console.error('Payment notification error:', error);
+        res.status(500).json({ error: 'Failed to process payment notification' });
+    }
+});
 
 // API endpoint to get all orders
 app.get('/api/orders', (req, res) => {
@@ -808,7 +986,7 @@ app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// Modify the server start code to use the HTTP server
+// Start the server
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -844,6 +1022,184 @@ function getAllOrders() {
     
     return orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 }
+
+// Function to migrate timestamp-based orders to numeric IDs
+function migrateTimestampOrders() {
+    const ordersDir = path.join(__dirname, 'orders');
+    if (!fs.existsSync(ordersDir)) return;
+    
+    const orderFiles = fs.readdirSync(ordersDir);
+    let migrated = false;
+    
+    for (const file of orderFiles) {
+        if (!file.endsWith('.json')) continue;
+        
+        // Skip if file already has numeric ID format
+        if (file.match(/order-\d+\.json/)) continue;
+        
+        const filePath = path.join(ordersDir, file);
+        const orderData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        
+        // Generate new numeric ID
+        const newId = getNextOrderId();
+        const newFileName = `order-${newId}.json`;
+        const newFilePath = path.join(ordersDir, newFileName);
+        
+        // Update order data with new ID and remove timestamp
+        orderData.id = newId;
+        delete orderData.timestamp;
+        
+        // Save with new filename
+        fs.writeFileSync(newFilePath, JSON.stringify(orderData, null, 2));
+        
+        // Delete old file
+        fs.unlinkSync(filePath);
+        
+        migrated = true;
+        console.log(`Migrated order from ${file} to ${newFileName}`);
+    }
+    
+    if (migrated) {
+        console.log('Order migration completed');
+    }
+}
+
+// Checkout endpoint
+app.post('/api/checkout', async (req, res) => {
+    try {
+        const { items, customer, deliveryType, paymentMethod } = req.body;
+
+        console.log('Received checkout request:', req.body);
+
+        // Validate required fields
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            console.error('Missing or invalid items');
+            return res.status(400).json({ error: 'At least one item is required' });
+        }
+
+        if (!customer || !customer.name || !customer.phone) {
+            console.error('Missing or invalid customer information');
+            return res.status(400).json({ error: 'Customer information is required' });
+        }
+
+        // Generate unique order ID
+        const orderId = `ORDER_${Date.now()}`;
+
+        // Calculate total
+        const total = items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+        // Prepare order data
+        const orderData = {
+            status: 'pending',
+            customer,
+            deliveryType,
+            items,
+            total,
+            orderTime: new Date().toISOString(),
+            paymentMethod
+        };
+
+        // Prepare Allpay request
+        const request = {
+            login: ALLPAY_CONFIG.apiLogin,
+            items: items.map(item => ({
+                name: item.name,
+                qty: item.quantity || 1,
+                price: item.price,
+                vat: 1 // 18% VAT included
+            })),
+            order_id: orderId,
+            client_name: customer.name,
+            client_email: customer.email || '',
+            client_phone: customer.phone,
+            currency: 'ILS',
+            lang: 'HE',
+            notifications_url: `${process.env.API_BASE_URL || 'http://localhost:3002'}/api/payment/notify`,
+            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
+            backlink_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
+            expire: Math.floor(Date.now() / 1000) + 3600 // 1 hour expiration
+        };
+
+        console.log('Allpay request:', JSON.stringify(request, null, 2));
+
+        // Generate signature
+        const sign = generateAllpaySignature(request, ALLPAY_CONFIG.apiKey);
+        const requestWithSign = { ...request, sign };
+
+        console.log('Sending request to Allpay with signature:', sign);
+        console.log('Full request with signature:', JSON.stringify(requestWithSign, null, 2));
+
+        try {
+            // Send request to Allpay
+            const response = await axios.post(ALLPAY_CONFIG.apiUrl, requestWithSign, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+
+            console.log('Allpay response:', response.data);
+
+            if (!response.data || !response.data.payment_url) {
+                console.error('Invalid response from Allpay:', response.data);
+                throw new Error('No payment URL received from Allpay');
+            }
+
+            // Save order details
+            const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+            fs.writeFileSync(orderFile, JSON.stringify(orderData, null, 2));
+
+            // Notify connected clients
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({
+                        type: 'order_created',
+                        orderId: orderId,
+                        details: orderData
+                    }));
+                }
+            });
+
+            // Return payment URL
+            res.json({
+                success: true,
+                orderId: orderId,
+                paymentUrl: response.data.payment_url
+            });
+        } catch (allpayError) {
+            console.error('Error from Allpay:', {
+                message: allpayError.message,
+                response: allpayError.response ? {
+                    data: allpayError.response.data,
+                    status: allpayError.response.status,
+                    headers: allpayError.response.headers
+                } : null,
+                request: allpayError.request ? {
+                    method: allpayError.request.method,
+                    path: allpayError.request.path,
+                    headers: allpayError.request._header
+                } : null
+            });
+            throw allpayError;
+        }
+    } catch (error) {
+        console.error('Error processing checkout:', error);
+        console.error('Error details:', {
+            message: error.message,
+            response: error.response ? {
+                data: error.response.data,
+                status: error.response.status,
+                headers: error.response.headers
+            } : null,
+            request: error.request ? {
+                method: error.request.method,
+                path: error.request.path,
+                headers: error.request._header
+            } : null
+        });
+        res.status(500).json({ error: 'Error processing checkout', details: error.message });
+    }
+});
 
 // Export the Express API
 module.exports = app;

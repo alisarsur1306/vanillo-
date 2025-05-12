@@ -1498,6 +1498,14 @@
                                required>
                     </div>
                     <div class="form-group">
+                        <label class="form-label" for="customerEmail">البريد الإلكتروني</label>
+                        <input type="email" 
+                               id="customerEmail" 
+                               class="form-input" 
+                               placeholder="أدخل بريدك الإلكتروني" 
+                               required>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label" for="customerPhone">رقم الهاتف</label>
                         <input type="tel" 
                                id="customerPhone" 
@@ -1576,6 +1584,16 @@
                               class="form-input" 
                               rows="2" 
                               placeholder="أي ملاحظات إضافية للطلب"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="paymentMethod">طريقة الدفع</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="radio" id="cash" name="paymentMethod" value="cash" checked>
+                        <label for="cash">نقدي</label>
+                        <input type="radio" id="credit_card" name="paymentMethod" value="credit_card">
+                        <label for="credit_card">بطاقة ائتمانية</label>
+                    </div>
                 </div>
                 
                 <button type="submit" class="submit-btn">
@@ -2597,17 +2615,18 @@
         // Handle order submission
         async function handleOrderSubmission(event) {
             event.preventDefault();
-            
             const form = event.target;
             const formData = new FormData(form);
-            
             // Get form values
             const customerName = document.getElementById('customerName');
+            const customerEmail = document.getElementById('customerEmail');
             const customerPhone = document.getElementById('customerPhone');
             const deliveryType = document.getElementById('deliveryType');
             const customerAddress = document.getElementById('customerAddress');
             const customerNotes = document.getElementById('customerNotes');
-
+            const paymentMethodInput = document.querySelector('input[name="paymentMethod"]:checked');
+            const paymentMethod = paymentMethodInput ? paymentMethodInput.value : 'cash';
+            
             // Reset previous error states
             document.querySelectorAll('.error-message').forEach(el => el.remove());
             document.querySelectorAll('.form-input.error').forEach(el => el.classList.remove('error'));
@@ -2617,6 +2636,11 @@
 
             if (!customerName.value.trim()) {
                 showError(customerName, 'الرجاء إدخال الاسم');
+                hasError = true;
+            }
+
+            if (!customerEmail.value.trim()) {
+                showError(customerEmail, 'الرجاء إدخال البريد الإلكتروني');
                 hasError = true;
             }
 
@@ -2675,6 +2699,7 @@
                 status: "pending",
                 customer: {
                     name: customerName.value.trim(),
+                    email: customerEmail.value.trim(),
                     phone: customerPhone.value.trim(),
                     address: deliveryType.value === 'delivery' ? customerAddress.value.trim() : null,
                     notes: customerNotes.value.trim()
@@ -2682,7 +2707,8 @@
                 deliveryType: deliveryType.value,
                 items: orderItems,
                 total: orderTotal,
-                orderTime: new Date().toISOString()
+                orderTime: new Date().toISOString(),
+                paymentMethod: paymentMethod
             };
             
             try {
@@ -2700,6 +2726,12 @@
                 
                 const result = await response.json();
                 console.log('Order submitted successfully:', result);
+                
+                // If payment method is credit card and paymentUrl is returned, redirect to Hypay
+                if (paymentMethod === 'credit_card' && result.paymentUrl) {
+                    window.location.href = result.paymentUrl;
+                    return;
+                }
                 
                 // Clear cart and update UI
                 cart = {};
