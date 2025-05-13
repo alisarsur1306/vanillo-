@@ -8,6 +8,7 @@ import MenuManagement from '../components/admin/MenuManagement';
 import OrderManagement from '../components/admin/OrderManagement';
 import Dashboard from '../components/admin/Dashboard';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import UserManagement from '../components/admin/UserManagement';
 
 const theme = createTheme({
   palette: {
@@ -79,6 +80,14 @@ const AdminDashboard = () => {
               element={
                 <AdminLayout>
                   <OrderManagement />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <AdminLayout>
+                  <UserManagement />
                 </AdminLayout>
               }
             />
