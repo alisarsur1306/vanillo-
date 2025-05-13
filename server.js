@@ -44,15 +44,17 @@ app.use(session({
         path: sessionsDir,
         ttl: 24 * 60 * 60, // 24 hours
         reapInterval: 60 * 60, // Clean up expired sessions every hour
-        retries: 3, // Add retry logic
-        secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
+        retries: 3,
+        secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
         logFn: function(message) {
             console.log('[Session]', message);
-        }
+        },
+        encrypt: true,
+        encoding: 'utf8'
     }),
-    secret: process.env.SESSION_SECRET || 'vanillo-secret-key',
-    resave: false, // Changed to false to reduce file system operations
-    saveUninitialized: false, // Changed to false to reduce file system operations
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+    resave: false,
+    saveUninitialized: false,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
