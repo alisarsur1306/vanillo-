@@ -1544,6 +1544,23 @@
                         </div>
                     </div>
                 </div>
+                <script>
+                // Enhance payment method selection for visual feedback
+                const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+                const paymentLabels = document.querySelectorAll('.payment-method-label');
+                function updatePaymentSelection() {
+                    paymentLabels.forEach(label => label.classList.remove('selected'));
+                    paymentRadios.forEach(radio => {
+                        if (radio.checked) {
+                            radio.parentElement.querySelector('.payment-method-label').classList.add('selected');
+                        }
+                    });
+                }
+                paymentRadios.forEach(radio => {
+                    radio.addEventListener('change', updatePaymentSelection);
+                });
+                window.addEventListener('DOMContentLoaded', updatePaymentSelection);
+                </script>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
@@ -2759,7 +2776,7 @@
             };
             
             try {
-                const response = await fetch('/api/orders', {
+                const response = await fetch('/api/checkout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -2774,26 +2791,19 @@
                 const result = await response.json();
                 console.log('Order submitted successfully:', result);
                 
-                // If payment method is credit card and paymentUrl is returned, redirect to Hypay
+                // If payment method is credit card and paymentUrl is returned, redirect to payment page
                 if (paymentMethod === 'credit_card' && result.paymentUrl) {
                     window.location.href = result.paymentUrl;
-                    return;
+                    return; // Do NOT clear cart or show tracking yet!
                 }
                 
-                // Clear cart and update UI
+                // For non-credit payments, proceed as before:
                 cart = {};
                 updateCartBadge();
                 updateCartDisplay();
-                
-                // Show success message
                 alert('تم تقديم الطلب بنجاح!');
-                
-                // Reset form
                 form.reset();
-                
-                // Switch to tracking view with the stored order items
                 switchToTrackingView(result.OrderID || result.orderId, orderItems, orderTotal);
-                
             } catch (error) {
                 console.error('Error submitting order:', error);
                 alert('فشل في تقديم الطلب. الرجاء المحاولة مرة أخرى.');
