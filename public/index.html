@@ -1451,6 +1451,38 @@
             margin-left: 0.5rem;
             margin-right: 0;
         }
+
+        /* Payment Method Styles */
+        .payment-method-card input[type="radio"]:checked + label .payment-method-label div {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .payment-method-card input[type="radio"]:checked + label .payment-method-label div i {
+            color: white;
+        }
+
+        .payment-method-label div {
+            border-color: var(--border-color);
+            background-color: white;
+            color: var(--text-color);
+        }
+
+        .payment-method-label div:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .payment-method-label div i {
+            color: var(--primary-color);
+            transition: color 0.2s ease;
+        }
+
+        .payment-method-label div:hover i {
+            color: var(--primary-color);
+        }
     </style>
 </head>
 <body>
@@ -1488,6 +1520,31 @@
             </div>
             
             <form id="orderForm" class="space-y-4 mt-6" novalidate>
+                <!-- Payment Method Section - Now at the top -->
+                <div class="form-group">
+                    <label class="form-label mb-4 block text-lg font-semibold">طريقة الدفع</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="payment-method-card">
+                            <input type="radio" id="cash" name="paymentMethod" value="cash" checked class="hidden">
+                            <label for="cash" class="payment-method-label">
+                                <div class="flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:border-primary">
+                                    <i class="fas fa-money-bill-wave text-2xl mr-3"></i>
+                                    <span class="text-lg font-medium">نقدي</span>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="payment-method-card">
+                            <input type="radio" id="credit_card" name="paymentMethod" value="credit_card" class="hidden">
+                            <label for="credit_card" class="payment-method-label">
+                                <div class="flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:border-primary">
+                                    <i class="fas fa-credit-card text-2xl mr-3"></i>
+                                    <span class="text-lg font-medium">بطاقة ائتمانية</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label" for="customerName">الاسم</label>
@@ -1584,16 +1641,6 @@
                               class="form-input" 
                               rows="2" 
                               placeholder="أي ملاحظات إضافية للطلب"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="paymentMethod">طريقة الدفع</label>
-                    <div class="flex items-center space-x-4">
-                        <input type="radio" id="cash" name="paymentMethod" value="cash" checked>
-                        <label for="cash">نقدي</label>
-                        <input type="radio" id="credit_card" name="paymentMethod" value="credit_card">
-                        <label for="credit_card">بطاقة ائتمانية</label>
-                    </div>
                 </div>
                 
                 <button type="submit" class="submit-btn">

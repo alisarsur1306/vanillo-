@@ -50,3 +50,7 @@ order-counter.json
 # Backup and session files
 menu-data.backup.json
 sessions/
+
+# Firebase
+backend/src/firebase-admin.js
+firebase-credentials.json

@@ -12,6 +12,33 @@ const FileStore = require('session-file-store')(session);
 const { menuData, restaurantInfo } = require('./menu-data.js');
 const axios = require('axios');
 const crypto = require('crypto');
+const { sequelize, testConnection } = require('./backend/src/config/database');
+const Menu = require('./backend/src/models/Menu');
+
+// Define data directory paths
+const DATA_DIR = process.env.NODE_ENV === 'production' ? '/data' : __dirname;
+const ORDERS_DIR = path.join(DATA_DIR, 'orders');
+const SESSIONS_DIR = path.join(DATA_DIR, 'sessions');
+const MENU_DATA_PATH = path.join(DATA_DIR, 'menu-data.json');
+
+// Create necessary directories
+[ORDERS_DIR, SESSIONS_DIR].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true, mode: 0o755 });
+    }
+});
+
+// Initialize database connection
+(async () => {
+  try {
+    await testConnection();
+    // Sync all models with database
+    await sequelize.sync({ alter: true });
+    console.log('Database models synchronized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+})();
 
 // Authentication configuration
 const USERS = {
@@ -41,7 +68,7 @@ try {
 // Session configuration
 app.use(session({
     store: new FileStore({
-        path: sessionsDir,
+        path: SESSIONS_DIR,
         ttl: 24 * 60 * 60, // 24 hours
         reapInterval: 60 * 60, // Clean up expired sessions every hour
         retries: 3,
@@ -210,15 +237,14 @@ function broadcastOrders() {
 // Function to load menu data from JSON file
 function loadMenuData() {
     try {
-        const menuDataPath = path.join(__dirname, 'menu-data.json');
-        if (fs.existsSync(menuDataPath)) {
-            const data = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
+        if (fs.existsSync(MENU_DATA_PATH)) {
+            const data = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
             Object.assign(menuData, data);
             console.log('Menu data loaded from JSON file');
         } else {
             // If JSON file doesn't exist, create it from the module
             const { menuData: moduleData } = require('./menu-data.js');
-            fs.writeFileSync(menuDataPath, JSON.stringify(moduleData, null, 4));
+            fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(moduleData, null, 4));
             Object.assign(menuData, moduleData);
             console.log('Created menu-data.json from module');
         }
@@ -234,16 +260,22 @@ loadMenuData();
 app.put('/api/menu', (req, res) => {
     console.log('Received request to update menu data:', req.body);
     try {
-        // Update the in-memory menu data
+        // First read the current menu data from disk
+        let currentMenuData = {};
+        if (fs.existsSync(MENU_DATA_PATH)) {
+            currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        }
+
+        // Update the menu data
         const { categories, items } = req.body;
         
         if (categories) {
             // If updating a single category
             if (categories.id) {
-                const categoryIndex = menuData.categories.findIndex(c => c.id === categories.id);
+                const categoryIndex = currentMenuData.categories.findIndex(c => c.id === categories.id);
                 if (categoryIndex !== -1) {
-                    menuData.categories[categoryIndex] = {
-                        ...menuData.categories[categoryIndex],
+                    currentMenuData.categories[categoryIndex] = {
+                        ...currentMenuData.categories[categoryIndex],
                         ...categories
                     };
                 } else {
@@ -254,23 +286,25 @@ app.put('/api/menu', (req, res) => {
                 }
             } else {
                 // If updating all categories
-                menuData.categories = categories;
+                currentMenuData.categories = categories;
             }
         }
         
         if (items) {
-            menuData.items = items;
+            currentMenuData.items = items;
         }
 
-        // Write the updated data to menu-data.json
-        const menuDataPath = path.join(__dirname, 'menu-data.json');
-        fs.writeFileSync(menuDataPath, JSON.stringify(menuData, null, 4));
-        console.log('Menu data updated successfully');
+        // Write the updated data to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
+        console.log('Menu data updated successfully on disk');
+        
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
         
         res.json({ 
             success: true, 
             message: 'Menu data updated successfully',
-            data: menuData
+            data: currentMenuData
         });
     } catch (error) {
         console.error('Error updating menu data:', error);
@@ -284,9 +318,14 @@ app.put('/api/menu', (req, res) => {
 // API endpoint to get menu data
 app.get('/api/menu', (req, res) => {
     try {
-        // Always read from the JSON file
-        const menuDataPath = path.join(__dirname, 'menu-data.json');
-        const data = JSON.parse(fs.readFileSync(menuDataPath, 'utf8'));
+        // Always read from disk
+        if (!fs.existsSync(MENU_DATA_PATH)) {
+            return res.status(404).json({
+                success: false,
+                error: 'Menu data not found'
+            });
+        }
+        const data = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
         res.json(data);
     } catch (error) {
         console.error('Error getting menu data:', error);
@@ -312,14 +351,26 @@ app.post('/api/menu', (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
+        // Read current menu data from disk
+        let currentMenuData = {};
+        if (fs.existsSync(MENU_DATA_PATH)) {
+            currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        }
+
         // Generate a unique ID
         newItem.id = `${newItem.categoryId}-${Date.now()}`;
         
         // Add the new item to the items array
-        menuData.items.push(newItem);
+        if (!currentMenuData.items) {
+            currentMenuData.items = [];
+        }
+        currentMenuData.items.push(newItem);
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
+        
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
         
         res.json({ success: true, item: newItem });
     } catch (error) {
@@ -334,20 +385,29 @@ app.put('/api/menu/:id', (req, res) => {
         const itemId = req.params.id;
         const updatedItem = req.body;
         
+        // Read current menu data from disk
+        if (!fs.existsSync(MENU_DATA_PATH)) {
+            return res.status(404).json({ success: false, message: 'Menu data not found' });
+        }
+        const currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        
         // Find the item index
-        const itemIndex = menuData.items.findIndex(item => item.id === itemId);
+        const itemIndex = currentMenuData.items.findIndex(item => item.id === itemId);
         
         if (itemIndex === -1) {
             return res.status(404).json({ success: false, message: 'Item not found' });
         }
         
         // Update the item
-        menuData.items[itemIndex] = { ...menuData.items[itemIndex], ...updatedItem };
+        currentMenuData.items[itemIndex] = { ...currentMenuData.items[itemIndex], ...updatedItem };
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
         
-        res.json({ success: true, item: menuData.items[itemIndex] });
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
+        
+        res.json({ success: true, item: currentMenuData.items[itemIndex] });
     } catch (error) {
         console.error('Error updating menu item:', error);
         res.status(500).json({ success: false, message: 'Error updating menu item' });
@@ -359,18 +419,27 @@ app.delete('/api/menu/:id', (req, res) => {
     try {
         const itemId = req.params.id;
         
+        // Read current menu data from disk
+        if (!fs.existsSync(MENU_DATA_PATH)) {
+            return res.status(404).json({ success: false, message: 'Menu data not found' });
+        }
+        const currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        
         // Find the item index
-        const itemIndex = menuData.items.findIndex(item => item.id === itemId);
+        const itemIndex = currentMenuData.items.findIndex(item => item.id === itemId);
         
         if (itemIndex === -1) {
             return res.status(404).json({ success: false, message: 'Item not found' });
         }
         
         // Remove the item
-        menuData.items.splice(itemIndex, 1);
+        currentMenuData.items.splice(itemIndex, 1);
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
+        
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
         
         res.json({ success: true });
     } catch (error) {
@@ -389,11 +458,25 @@ app.post('/api/categories', (req, res) => {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
         
-        // Add the new category
-        menuData.categories.push(newCategory);
+        // Read current menu data from disk
+        let currentMenuData = {};
+        if (fs.existsSync(MENU_DATA_PATH)) {
+            currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        }
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Initialize categories array if it doesn't exist
+        if (!currentMenuData.categories) {
+            currentMenuData.categories = [];
+        }
+        
+        // Add the new category
+        currentMenuData.categories.push(newCategory);
+        
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
+        
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
         
         res.json({ success: true, category: newCategory });
     } catch (error) {
@@ -408,20 +491,29 @@ app.put('/api/categories/:id', (req, res) => {
         const categoryId = req.params.id;
         const updatedCategory = req.body;
         
+        // Read current menu data from disk
+        if (!fs.existsSync(MENU_DATA_PATH)) {
+            return res.status(404).json({ success: false, message: 'Menu data not found' });
+        }
+        const currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        
         // Find the category index
-        const categoryIndex = menuData.categories.findIndex(category => category.id === categoryId);
+        const categoryIndex = currentMenuData.categories.findIndex(category => category.id === categoryId);
         
         if (categoryIndex === -1) {
             return res.status(404).json({ success: false, message: 'Category not found' });
         }
         
         // Update the category
-        menuData.categories[categoryIndex] = { ...menuData.categories[categoryIndex], ...updatedCategory };
+        currentMenuData.categories[categoryIndex] = { ...currentMenuData.categories[categoryIndex], ...updatedCategory };
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
         
-        res.json({ success: true, category: menuData.categories[categoryIndex] });
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
+        
+        res.json({ success: true, category: currentMenuData.categories[categoryIndex] });
     } catch (error) {
         console.error('Error updating category:', error);
         res.status(500).json({ success: false, message: 'Error updating category' });
@@ -433,15 +525,21 @@ app.delete('/api/categories/:id', (req, res) => {
     try {
         const categoryId = req.params.id;
         
+        // Read current menu data from disk
+        if (!fs.existsSync(MENU_DATA_PATH)) {
+            return res.status(404).json({ success: false, message: 'Menu data not found' });
+        }
+        const currentMenuData = JSON.parse(fs.readFileSync(MENU_DATA_PATH, 'utf8'));
+        
         // Find the category index
-        const categoryIndex = menuData.categories.findIndex(category => category.id === categoryId);
+        const categoryIndex = currentMenuData.categories.findIndex(category => category.id === categoryId);
         
         if (categoryIndex === -1) {
             return res.status(404).json({ success: false, message: 'Category not found' });
         }
         
         // Check if there are items in this category
-        const itemsInCategory = menuData.items.filter(item => item.categoryId === categoryId);
+        const itemsInCategory = currentMenuData.items.filter(item => item.categoryId === categoryId);
         if (itemsInCategory.length > 0) {
             return res.status(400).json({ 
                 success: false, 
@@ -450,10 +548,13 @@ app.delete('/api/categories/:id', (req, res) => {
         }
         
         // Remove the category
-        menuData.categories.splice(categoryIndex, 1);
+        currentMenuData.categories.splice(categoryIndex, 1);
         
-        // Save to file
-        fs.writeFileSync('menu-data.json', JSON.stringify(menuData, null, 4));
+        // Save to disk
+        fs.writeFileSync(MENU_DATA_PATH, JSON.stringify(currentMenuData, null, 4));
+        
+        // Update in-memory data
+        Object.assign(menuData, currentMenuData);
         
         res.json({ success: true });
     } catch (error) {
@@ -481,7 +582,7 @@ const activeTimers = new Map();
 
 // Function to get remaining time for an order
 function getOrderRemainingTime(orderId) {
-    const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+    const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
     if (!fs.existsSync(orderFile)) {
         return { timeLeft: 0, prepTime: 0, countdownStartTime: null };
     }
@@ -528,7 +629,7 @@ function getOrderRemainingTime(orderId) {
 // Function to start or update a countdown timer for an order
 function handleOrderTimer(orderId, prepTime) {
     // Get the order file to check if it exists and get current state
-    const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+    const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
     if (!fs.existsSync(orderFile)) {
         console.log(`Order file not found for ID ${orderId}`);
         return;
@@ -569,22 +670,9 @@ app.post('/api/orders', async (req, res) => {
         const order = req.body;
         const orderId = Date.now().toString();
         
-        // Ensure orders directory exists with proper permissions
-        try {
-            if (!fs.existsSync(ordersDir)) {
-                fs.mkdirSync(ordersDir, { recursive: true, mode: 0o755 });
-            }
-        } catch (dirError) {
-            console.error('Error creating orders directory:', dirError);
-            return res.status(500).json({ 
-                error: 'Server configuration error',
-                details: 'Unable to create orders directory'
-            });
-        }
-
         // Create order file with error handling
         try {
-            const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+            const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
             fs.writeFileSync(orderFile, JSON.stringify(order, null, 2), { mode: 0o644 });
         } catch (writeError) {
             console.error('Error writing order file:', writeError);
@@ -769,7 +857,7 @@ app.post('/api/payment/notify', async (req, res) => {
             const { order_id } = req.body;
             
             // Update order status
-            const orderPath = path.join(ordersDir, `order-${order_id}.json`);
+            const orderPath = path.join(ORDERS_DIR, `order-${order_id}.json`);
             if (fs.existsSync(orderPath)) {
                 const order = JSON.parse(fs.readFileSync(orderPath, 'utf8'));
                 order.status = 'paid';
@@ -795,20 +883,19 @@ app.post('/api/payment/notify', async (req, res) => {
 app.get('/api/orders', (req, res) => {
     console.log('Received request for orders');
     try {
-        const ordersDir = path.join(__dirname, 'orders');
-        if (!fs.existsSync(ordersDir)) {
+        if (!fs.existsSync(ORDERS_DIR)) {
             return res.json([]);
         }
         
-        const orderFiles = fs.readdirSync(ordersDir);
+        const orderFiles = fs.readdirSync(ORDERS_DIR);
         const orders = orderFiles
             .filter(file => file.endsWith('.json'))
             .map(file => {
-                const orderPath = path.join(ordersDir, file);
+                const orderPath = path.join(ORDERS_DIR, file);
                 const orderData = JSON.parse(fs.readFileSync(orderPath, 'utf8'));
                 return orderData;
             })
-            .sort((a, b) => b.id - a.id); // Sort by numeric ID in descending order
+            .sort((a, b) => b.id - a.id);
             
         console.log(`Retrieved ${orders.length} orders`);
         res.json(orders);
@@ -859,7 +946,7 @@ app.get('/api/orders/:id', (req, res) => {
     console.log(`Retrieving order ${orderId}`);
     
     try {
-        const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+        const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
         if (!fs.existsSync(orderFile)) {
             return res.status(404).json({ 
                 success: false, 
@@ -896,7 +983,7 @@ app.put('/api/orders/:id', (req, res) => {
     console.log(`Updating order ${orderId}:`, req.body);
     
     try {
-        const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+        const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
         if (!fs.existsSync(orderFile)) {
             return res.status(404).json({ 
                 success: false, 
@@ -971,7 +1058,7 @@ app.delete('/api/orders/:id', (req, res) => {
     console.log(`Deleting order ${orderId}`);
     
     try {
-        const orderFile = path.join(ordersDir, `order-${orderId}.json`);
+        const orderFile = path.join(ORDERS_DIR, `order-${orderId}.json`);
         if (!fs.existsSync(orderFile)) {
             return res.status(404).json({ 
                 success: false, 
@@ -1041,11 +1128,15 @@ migrateTimestampOrders();
 // Helper function to get all orders
 function getAllOrders() {
     const orders = [];
-    const files = fs.readdirSync(ordersDir);
+    if (!fs.existsSync(ORDERS_DIR)) {
+        return orders;
+    }
+    
+    const files = fs.readdirSync(ORDERS_DIR);
     
     for (const file of files) {
         if (file.endsWith('.json')) {
-            const orderData = fs.readFileSync(path.join(ordersDir, file), 'utf8');
+            const orderData = fs.readFileSync(path.join(ORDERS_DIR, file), 'utf8');
             const order = JSON.parse(orderData);
             // Ensure OrderID and orderNumber are set from the filename if not present
             if (!order.OrderID) {

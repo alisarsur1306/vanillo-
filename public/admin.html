@@ -34,6 +34,7 @@
             color: white;
             padding: 1rem;
             transition: all 0.3s;
+            z-index: 1000;
         }
 
         .sidebar-header {
@@ -86,7 +87,7 @@
             top: 0;
             right: 0;
             left: var(--sidebar-width);
-            z-index: 1000;
+            z-index: 999;
         }
 
         .content-wrapper {
@@ -190,6 +191,63 @@
             border-color: #fed7d7;
             color: #c53030;
         }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-preparing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-completed {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background-color: var(--vanillo-background);
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-footer {
+            background-color: var(--vanillo-background);
+            border-top: 1px solid #dee2e6;
+            border-radius: 0 0 15px 15px;
+        }
     </style>
 </head>
 <body>
@@ -232,9 +290,6 @@
                 <a href="#" class="nav-link" data-section="orders">
                     <i class="bi bi-cart"></i> Orders
                 </a>
-                <a href="#" class="nav-link" data-section="settings">
-                    <i class="bi bi-gear"></i> Settings
-                </a>
                 <a href="#" class="nav-link" onclick="logout()">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
@@ -249,135 +304,114 @@
                 </button>
                 <span id="currentSection">Dashboard</span>
             </div>
-            <div>
-                <span id="currentTime"></span>
-            </div>
+            <div id="currentTime"></div>
         </div>
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">
             <!-- Dashboard Section -->
-            <div id="dashboardSection" class="section active">
+            <div id="dashboardSection" class="section">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="dashboard-card">
-                            <h6>Total Categories</h6>
-                            <h3 id="totalCategories">0</h3>
+                            <h5>Categories</h5>
+                            <h2 id="totalCategories">0</h2>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="dashboard-card">
-                            <h6>Total Menu Items</h6>
-                            <h3 id="totalItems">0</h3>
+                            <h5>Menu Items</h5>
+                            <h2 id="totalItems">0</h2>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="dashboard-card">
-                            <h6>Active Orders</h6>
-                            <h3 id="activeOrders">0</h3>
+                            <h5>Active Orders</h5>
+                            <h2 id="activeOrders">0</h2>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Categories Section -->
-            <div id="categoriesSection" class="section">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Categories</h5>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                            <i class="bi bi-plus"></i> Add Category
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Category</th>
-                                        <th>Items</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="categoriesList"></tbody>
-                            </table>
-                        </div>
+            <div id="categoriesSection" class="section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Categories</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                        <i class="bi bi-plus"></i> Add Category
+                    </button>
+                </div>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Name (English)</th>
+                                    <th>Items</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesList"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             <!-- Menu Items Section -->
-            <div id="itemsSection" class="section">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Menu Items</h5>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMenuItemModal">
-                            <i class="bi bi-plus"></i> Add Item
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Image</th>
-                                        <th>Name</th>
-                                        <th>Category</th>
-                                        <th>Price</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="menuItemsList"></tbody>
-                            </table>
-                        </div>
+            <div id="itemsSection" class="section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Menu Items</h2>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMenuItemModal">
+                        <i class="bi bi-plus"></i> Add Menu Item
+                    </button>
+                </div>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Name (English)</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="menuItemsList"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             <!-- Orders Section -->
-            <div id="ordersSection" class="section">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Orders</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="btn-group mb-3" role="group">
-                            <button type="button" class="btn btn-outline-primary" data-filter="all">All</button>
-                            <button type="button" class="btn btn-outline-primary" data-filter="pending">Pending</button>
-                            <button type="button" class="btn btn-outline-primary" data-filter="completed">Completed</button>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Order ID</th>
-                                        <th>Items</th>
-                                        <th>Total</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ordersList"></tbody>
-                            </table>
-                        </div>
+            <div id="ordersSection" class="section" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Orders</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary active" data-filter="all">All</button>
+                        <button class="btn btn-outline-primary" data-filter="pending">Pending</button>
+                        <button class="btn btn-outline-primary" data-filter="preparing">Preparing</button>
+                        <button class="btn btn-outline-primary" data-filter="ready">Ready</button>
+                        <button class="btn btn-outline-primary" data-filter="completed">Completed</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Settings Section -->
-            <div id="settingsSection" class="section">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Settings</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label for="menuDataFile" class="form-label">Import Menu Data</label>
-                            <input type="file" class="form-control" id="menuDataFile" accept=".json">
-                        </div>
-                        <button class="btn btn-primary" onclick="exportMenuData()">
-                            <i class="bi bi-download"></i> Export Menu Data
-                        </button>
+                <div class="dashboard-card">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersList"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -395,20 +429,12 @@
                 <div class="modal-body">
                     <form id="addCategoryForm">
                         <div class="mb-3">
-                            <label for="categoryName" class="form-label">Category Name (Arabic)</label>
+                            <label for="categoryName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="categoryName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="categoryNameEn" class="form-label">Category Name (English)</label>
+                            <label for="categoryNameEn" class="form-label">Name (English)</label>
                             <input type="text" class="form-control" id="categoryNameEn" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="categoryDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="categoryDescription"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="categoryImage" class="form-label">Image URL</label>
-                            <input type="text" class="form-control" id="categoryImage">
                         </div>
                     </form>
                 </div>
@@ -432,20 +458,12 @@
                     <form id="editCategoryForm">
                         <input type="hidden" id="editCategoryId">
                         <div class="mb-3">
-                            <label for="editCategoryName" class="form-label">Category Name (Arabic)</label>
+                            <label for="editCategoryName" class="form-label">Name</label>
                             <input type="text" class="form-control" id="editCategoryName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="editCategoryNameEn" class="form-label">Category Name (English)</label>
+                            <label for="editCategoryNameEn" class="form-label">Name (English)</label>
                             <input type="text" class="form-control" id="editCategoryNameEn" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCategoryDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editCategoryDescription"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editCategoryImage" class="form-label">Image URL</label>
-                            <input type="text" class="form-control" id="editCategoryImage">
                         </div>
                     </form>
                 </div>
@@ -459,7 +477,7 @@
 
     <!-- Add Menu Item Modal -->
     <div class="modal fade" id="addMenuItemModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Add Menu Item</h5>
@@ -467,42 +485,56 @@
                 </div>
                 <div class="modal-body">
                     <form id="addMenuItemForm">
-                        <div class="mb-3">
-                            <label for="itemName" class="form-label">Item Name (Arabic)</label>
-                            <input type="text" class="form-control" id="itemName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="itemNameEn" class="form-label">Item Name (English)</label>
-                            <input type="text" class="form-control" id="itemNameEn" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="itemCategory" class="form-label">Category</label>
-                            <select class="form-control" id="itemCategory" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="itemPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="itemPrice" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="itemCurrency" class="form-label">Currency</label>
-                            <select class="form-control" id="itemCurrency" required>
-                                <option value="ILS">ILS</option>
-                                <option value="USD">USD</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="itemName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="itemNameEn" class="form-label">Name (English)</label>
+                                    <input type="text" class="form-control" id="itemNameEn" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="itemCategory" class="form-label">Category</label>
+                                    <select class="form-control" id="itemCategory" required></select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="itemPrice" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="itemPrice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="itemCurrency" class="form-label">Currency</label>
+                                    <select class="form-control" id="itemCurrency" required>
+                                        <option value="TRY">TRY</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="itemImage" class="form-label">Image</label>
+                                    <input type="file" class="form-control" id="itemImage" accept="image/*">
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="itemDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="itemDescription"></textarea>
+                            <textarea class="form-control" id="itemDescription" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="itemImage" class="form-label">Image URL</label>
-                            <input type="text" class="form-control" id="itemImage">
+                            <label class="form-label">Extras</label>
+                            <div id="extrasContainer"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addExtraField()">
+                                <i class="bi bi-plus"></i> Add Extra
+                            </button>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="addMenuItem()">Add Item</button>
+                    <button type="button" class="btn btn-primary" onclick="addMenuItem()">Add Menu Item</button>
                 </div>
             </div>
         </div>
@@ -510,7 +542,7 @@
 
     <!-- Edit Menu Item Modal -->
     <div class="modal fade" id="editMenuItemModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Menu Item</h5>
@@ -519,43 +551,48 @@
                 <div class="modal-body">
                     <form id="editMenuItemForm">
                         <input type="hidden" id="editItemId">
-                        <div class="mb-3">
-                            <label for="editItemName" class="form-label">Item Name (Arabic)</label>
-                            <input type="text" class="form-control" id="editItemName" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editItemNameEn" class="form-label">Item Name (English)</label>
-                            <input type="text" class="form-control" id="editItemNameEn" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editItemCategory" class="form-label">Category</label>
-                            <select class="form-control" id="editItemCategory" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editItemPrice" class="form-label">Price</label>
-                            <input type="number" class="form-control" id="editItemPrice" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editItemCurrency" class="form-label">Currency</label>
-                            <select class="form-control" id="editItemCurrency" required>
-                                <option value="ILS">ILS</option>
-                                <option value="USD">USD</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editItemName" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="editItemName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editItemNameEn" class="form-label">Name (English)</label>
+                                    <input type="text" class="form-control" id="editItemNameEn" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editItemCategory" class="form-label">Category</label>
+                                    <select class="form-control" id="editItemCategory" required></select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editItemPrice" class="form-label">Price</label>
+                                    <input type="number" class="form-control" id="editItemPrice" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editItemCurrency" class="form-label">Currency</label>
+                                    <select class="form-control" id="editItemCurrency" required>
+                                        <option value="TRY">TRY</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editItemImage" class="form-label">Image</label>
+                                    <input type="file" class="form-control" id="editItemImage" accept="image/*">
+                                </div>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="editItemDescription" class="form-label">Description</label>
-                            <textarea class="form-control" id="editItemDescription"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editItemImage" class="form-label">Image URL</label>
-                            <input type="text" class="form-control" id="editItemImage">
+                            <textarea class="form-control" id="editItemDescription" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Extras</label>
-                            <div id="extrasContainer">
-                                <!-- Extras will be added here dynamically -->
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addExtraField()">
+                            <div id="editExtrasContainer"></div>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addExtraField('editExtrasContainer')">
                                 <i class="bi bi-plus"></i> Add Extra
                             </button>
                         </div>
@@ -563,68 +600,32 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="updateMenuItem()">Update Item</button>
+                    <button type="button" class="btn btn-primary" onclick="updateMenuItem()">Update Menu Item</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bulk Category Update Modal -->
-    <div class="modal fade" id="bulkCategoryUpdateModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- View Order Modal -->
+    <div class="modal fade" id="viewOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Bulk Update Category Items</h5>
+                    <h5 class="modal-title">Order Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="bulkCategoryUpdateForm">
-                        <input type="hidden" id="bulkCategoryId">
-                        <div class="mb-3">
-                            <label class="form-label">Select Fields to Update</label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="updatePrice" checked>
-                                <label class="form-check-label" for="updatePrice">Price</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="updateCurrency" checked>
-                                <label class="form-check-label" for="updateCurrency">Currency</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="updateExtras" checked>
-                                <label class="form-check-label" for="updateExtras">Extras</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="bulkItemPrice" class="form-label">New Price</label>
-                            <input type="number" class="form-control" id="bulkItemPrice">
-                        </div>
-                        <div class="mb-3">
-                            <label for="bulkItemCurrency" class="form-label">New Currency</label>
-                            <select class="form-control" id="bulkItemCurrency">
-                                <option value="ILS">ILS</option>
-                                <option value="USD">USD</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Extras</label>
-                            <div id="bulkExtrasContainer">
-                                <!-- Extras will be added here dynamically -->
-                            </div>
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" onclick="addBulkExtraField()">
-                                <i class="bi bi-plus"></i> Add Extra
-                            </button>
-                        </div>
-                    </form>
+                    <div id="orderDetails"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="applyBulkUpdate()">Apply Changes</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="updateOrderStatusBtn">Update Status</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="admin.js"></script>
 </body>

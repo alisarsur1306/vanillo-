@@ -14,37 +14,52 @@ let elements = {};
 const placeholderImage = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2U8L3RleHQ+PHRleHQgeD0iNTAiIHk9IjUwIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuN2VtIj5Ob3QgQXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-    initializeElements();
-    
-    // Check for existing session
-    const savedUser = localStorage.getItem('adminUser');
-    if (savedUser) {
-        try {
-            currentUser = JSON.parse(savedUser);
-            console.log("Found saved user:", currentUser);
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Check for existing session
+        const response = await fetch('/api/auth/check', { credentials: 'include' });
+        const data = await response.json();
+        
+        if (data.isAuthenticated) {
+            currentUser = data.user;
             showAdminPanel();
-        } catch (error) {
-            console.error("Error parsing saved user:", error);
-            localStorage.removeItem('adminUser');
+            await loadMenuData();
+        } else {
             showLoginForm();
         }
-    } else {
-        console.log("No saved user found");
-        showLoginForm();
+        
+        // Add event listeners
+        elements.loginForm.addEventListener('submit', handleLogin);
+        elements.logoutBtn.addEventListener('click', handleLogout);
+        
+        // Add section navigation listeners
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = e.target.getAttribute('href').substring(1);
+                switchSection(section);
+            });
+        });
+        
+        // Add form submission listeners
+        elements.addCategoryForm.addEventListener('submit', handleAddCategory);
+        elements.editCategoryForm.addEventListener('submit', handleEditCategory);
+        elements.addMenuItemForm.addEventListener('submit', handleAddMenuItem);
+        elements.editMenuItemForm.addEventListener('submit', handleEditMenuItem);
+        
+        // Add modal close listeners
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', () => {
+                const form = modal.querySelector('form');
+                if (form) form.reset();
+            });
+        });
+        
+        console.log('Admin panel initialized successfully');
+    } catch (error) {
+        console.error('Error initializing admin panel:', error);
+        showAlert('Failed to initialize admin panel: ' + error.message, 'danger');
     }
-
-    // Setup login form handler
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-    } else {
-        console.error("Login form not found!");
-    }
-
-    setupEventListeners();
-    updateCurrentTime();
-    setInterval(updateCurrentTime, 1000);
 });
 
 // Initialize DOM elements
@@ -79,7 +94,19 @@ function initializeElements() {
         editItemDescription: document.getElementById('editItemDescription'),
         editItemImage: document.getElementById('editItemImage'),
         extrasContainer: document.getElementById('extrasContainer'),
-        editMenuItemModal: document.getElementById('editMenuItemModal')
+        editExtrasContainer: document.getElementById('editExtrasContainer'),
+        editMenuItemModal: document.getElementById('editMenuItemModal'),
+        viewOrderModal: document.getElementById('viewOrderModal'),
+        orderDetails: document.getElementById('orderDetails'),
+        updateOrderStatusBtn: document.getElementById('updateOrderStatusBtn'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        addCategoryForm: document.getElementById('addCategoryForm'),
+        editCategoryForm: document.getElementById('editCategoryForm'),
+        addMenuItemForm: document.getElementById('addMenuItemForm'),
+        editMenuItemForm: document.getElementById('editMenuItemForm'),
+        usernameInput: document.getElementById('username'),
+        passwordInput: document.getElementById('password'),
+        usernameDisplay: document.getElementById('usernameDisplay')
     };
     
     // Ensure login container is properly initialized
@@ -157,95 +184,67 @@ function setupEventListeners() {
 // Authentication functions
 async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    const errorElement = document.getElementById('loginError');
-
+    const username = elements.usernameInput.value;
+    const password = elements.passwordInput.value;
+    
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
-
+        
         const data = await response.json();
-
+        
         if (response.ok) {
-            currentUser = { username, role: data.role };
-            localStorage.setItem('adminUser', JSON.stringify(currentUser));
+            currentUser = data.user;
             showAdminPanel();
-            // Force reload the page to ensure proper initialization
-            window.location.reload();
+            await loadMenuData();
+            showAlert('Login successful!', 'success');
         } else {
-            errorElement.textContent = data.error || 'Invalid credentials';
-            errorElement.style.display = 'block';
+            throw new Error(data.message || 'Login failed');
         }
     } catch (error) {
         console.error('Login error:', error);
-        errorElement.textContent = 'An error occurred during login. Please try again.';
-        errorElement.style.display = 'block';
+        showAlert(error.message || 'Login failed. Please try again.', 'danger');
     }
 }
 
-function checkAuth() {
-    const savedUser = localStorage.getItem('adminUser');
-    if (savedUser) {
-        try {
-            currentUser = JSON.parse(savedUser);
-            console.log("Found saved user:", currentUser);
-            showAdminPanel();
-        } catch (error) {
-            console.error("Error parsing saved user:", error);
-            localStorage.removeItem('adminUser');
+async function handleLogout() {
+    try {
+        const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            currentUser = null;
             showLoginForm();
+            showAlert('Logged out successfully', 'success');
+        } else {
+            throw new Error('Logout failed');
         }
-    } else {
-        console.log("No saved user found");
-        showLoginForm();
+    } catch (error) {
+        console.error('Logout error:', error);
+        showAlert('Logout failed. Please try again.', 'danger');
     }
 }
 
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('adminUser');
-    showLoginForm();
-}
-
-// UI functions
 function showLoginForm() {
-    console.log("Showing login form");
-    if (elements.loginContainer && elements.mainContent) {
-        elements.loginContainer.style.display = 'flex';
-        elements.mainContent.style.display = 'none';
-        // Reset form and hide error message
-        const loginForm = document.getElementById('loginForm');
-        const errorElement = document.getElementById('loginError');
-        if (loginForm) {
-            loginForm.reset();
-        }
-        if (errorElement) {
-            errorElement.style.display = 'none';
-        }
-    } else {
-        console.error("Login container or main content not found in showLoginForm");
-    }
+    elements.loginContainer.style.display = 'flex';
+    elements.mainContent.style.display = 'none';
+    elements.usernameInput.value = '';
+    elements.passwordInput.value = '';
 }
 
 function showAdminPanel() {
-    console.log("Showing admin panel");
-    if (elements.loginContainer && elements.mainContent) {
-        elements.loginContainer.style.display = 'none';
-        elements.mainContent.style.display = 'block';
-        
-        // Initialize the admin panel
-        loadMenuData();
-        switchSection('dashboard');
-        updateCurrentTime();
-    } else {
-        console.error("Login container or main content not found in showAdminPanel");
-    }
+    elements.loginContainer.style.display = 'none';
+    elements.mainContent.style.display = 'block';
+    elements.usernameDisplay.textContent = currentUser?.username || 'Admin';
+    switchSection('dashboard');
 }
 
 function updateCurrentTime() {
@@ -355,12 +354,16 @@ function updateDashboardStats() {
     // Update dashboard statistics
     elements.totalCategories.textContent = menuData.categories.length;
     elements.totalItems.textContent = menuData.items.length;
-    elements.activeOrders.textContent = menuData.orders.filter(order => order.status === 'pending').length;
+    elements.activeOrders.textContent = menuData.orders.filter(order => 
+        ['pending', 'preparing', 'ready'].includes(order.status)
+    ).length;
     
     console.log("Dashboard stats updated:", {
         categories: menuData.categories.length,
         items: menuData.items.length,
-        activeOrders: menuData.orders.filter(order => order.status === 'pending').length
+        activeOrders: menuData.orders.filter(order => 
+            ['pending', 'preparing', 'ready'].includes(order.status)
+        ).length
     });
 }
 
@@ -387,7 +390,7 @@ function updateCategoriesList() {
         row.innerHTML = `
             <td>
                 <div class="d-flex align-items-center">
-                    <img src="/images/${category.image || 'default-category.png'}" 
+                    <img src="${category.image || placeholderImage}" 
                          alt="${category.name}" 
                          class="item-image me-3"
                          onerror="this.src='${placeholderImage}'">
@@ -402,9 +405,6 @@ function updateCategoriesList() {
                 <div class="btn-group">
                     <button class="btn btn-sm btn-outline-primary edit-category-btn" data-category='${JSON.stringify(category)}'>
                         <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success" onclick="openBulkCategoryUpdate('${category.id}')">
-                        <i class="bi bi-arrow-repeat"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory('${category.id}')">
                         <i class="bi bi-trash"></i>
@@ -438,29 +438,11 @@ function updateMenuItemsList() {
     console.log("Updating menu items list with", menuData.items.length, "items");
     
     elements.menuItemsList.innerHTML = menuData.items.map(item => {
-        // Map image filenames to actual files
-        let imagePath = item.image;
-        if (imagePath) {
-            const filename = imagePath.split('/').pop();
-            const imageMap = {
-                'mickey.jpg': 'baby-fish-vanillo.jpg',
-                'pancake-3.jpg': '3-pancakes.jpg',
-                'pancake-lotus.jpg': 'lotus-pancake.jpg',
-                'pancake-12.jpg': '12-small-pancakes.jpg',
-                'pancake-small.jpg': 'small-pancake.jpg',
-                'pancake-large.jpg': 'large-pancake.jpg',
-                'cocktail.jpg': 'vanillo-cocktail.jpg',
-                'milkshake.jpg': 'vanillo-milkshake.jpg',
-                'gross.jpg': 'souffle.jpg',
-                'coffee.jpg': 'iced-coffee.jpg'
-            };
-            imagePath = `/images/${imageMap[filename] || filename}`;
-        }
-
+        const category = menuData.categories.find(c => c.id === item.categoryId);
         return `
             <tr>
                 <td>
-                    <img src="${imagePath || '/images/default-item.png'}" 
+                    <img src="${item.image || placeholderImage}" 
                          alt="${item.name}" 
                          class="item-image"
                          onerror="this.src='${placeholderImage}'">
@@ -469,15 +451,17 @@ function updateMenuItemsList() {
                     <div class="category-name">${item.name}</div>
                     <div class="category-name-en">${item.nameEn}</div>
                 </td>
-                <td>${item.category}</td>
-                <td>${item.price} ${item.currency || 'SAR'}</td>
+                <td>${category ? category.name : 'Uncategorized'}</td>
+                <td>${item.price} ${item.currency || 'ILS'}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary edit-item-btn" data-item='${JSON.stringify(item)}'>
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteMenuItem('${item.id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary edit-item-btn" data-item='${JSON.stringify(item)}'>
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMenuItem('${item.id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -773,7 +757,7 @@ async function editMenuItem(item) {
         if (!elements.editItemId || !elements.editItemName || !elements.editItemNameEn || 
             !elements.editItemCategory || !elements.editItemPrice || !elements.editItemCurrency || 
             !elements.editItemDescription || !elements.editItemImage || !elements.extrasContainer || 
-            !elements.editMenuItemModal) {
+            !elements.editExtrasContainer || !elements.editMenuItemModal) {
             console.error('Required form elements not found');
             showAlert('Failed to edit menu item: Form elements not found', 'danger');
             return;
@@ -818,7 +802,7 @@ async function updateMenuItem() {
     const currency = document.getElementById('editItemCurrency').value;
     const description = document.getElementById('editItemDescription').value;
     const image = document.getElementById('editItemImage').value;
-    const extras = getExtrasFromContainer('extrasContainer');
+    const extras = getExtrasFromContainer('editExtrasContainer');
 
     // Validate required fields
     if (!name || !categoryId || isNaN(price)) {
@@ -937,13 +921,44 @@ async function viewOrder(id) {
     const order = menuData.orders.find(o => o.id === id);
     if (!order) return;
 
-    alert(`
-Order ID: ${order.id}
-Items: ${order.items.map(item => `${item.name} (${item.quantity})`).join(', ')}
-Total: ${order.total} ${order.currency}
-Status: ${order.status}
-Date: ${new Date(order.date).toLocaleString()}
-    `);
+    const details = document.getElementById('orderDetails');
+    details.innerHTML = `
+        <div class="mb-4">
+            <h6>Order Information</h6>
+            <p><strong>Order ID:</strong> ${order.id}</p>
+            <p><strong>Customer:</strong> ${order.customerName}</p>
+            <p><strong>Status:</strong> <span class="status-badge status-${order.status}">${order.status}</span></p>
+            <p><strong>Total:</strong> ${order.total} ${order.currency}</p>
+        </div>
+        <div class="mb-4">
+            <h6>Items</h6>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Extras</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.price} ${order.currency}</td>
+                            <td>${item.extras ? item.extras.map(extra => extra.name).join(', ') : '-'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    const updateBtn = document.getElementById('updateOrderStatusBtn');
+    updateBtn.onclick = () => updateOrderStatus(id);
+    
+    new bootstrap.Modal(document.getElementById('viewOrderModal')).show();
 }
 
 async function completeOrder(id) {
@@ -1206,6 +1221,38 @@ async function resetAllOrders() {
     } catch (error) {
         console.error('Error resetting orders:', error);
         showAlert(error.message || 'Failed to reset orders', 'danger');
+    }
+}
+
+async function updateOrderStatus(id) {
+    const order = menuData.orders.find(o => o.id === id);
+    if (!order) return;
+    
+    const statuses = ['pending', 'preparing', 'ready', 'completed'];
+    const currentIndex = statuses.indexOf(order.status);
+    const nextStatus = statuses[currentIndex + 1] || statuses[0];
+    
+    try {
+        const response = await fetch(`/api/orders/${id}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status: nextStatus })
+        });
+        
+        if (response.ok) {
+            order.status = nextStatus;
+            updateOrdersList();
+            updateDashboardStats();
+            bootstrap.Modal.getInstance(document.getElementById('viewOrderModal')).hide();
+            showAlert('Order status updated successfully', 'success');
+        } else {
+            throw new Error('Failed to update order status');
+        }
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        showAlert('Error updating order status. Please try again.', 'danger');
     }
 }
 

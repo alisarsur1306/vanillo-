@@ -73,11 +73,11 @@
             const orderId = urlParams.get('orderId');
             
             if (orderId) {
-                // Redirect to the specific order tracker
-                window.location.href = `/orders.html?orderId=${orderId}`;
+                // Redirect to the index page and open order tracking modal
+                window.location.href = `/?openOrderModal=${orderId}`;
             } else {
-                // If no order ID, redirect to the orders page
-                window.location.href = '/orders.html';
+                // If no order ID, redirect to the index page
+                window.location.href = '/';
             }
         }
 
