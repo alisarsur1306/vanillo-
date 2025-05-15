@@ -196,6 +196,14 @@ app.get('/api/check-auth', (req, res) => {
     }
 });
 
+app.get('/api/auth/check', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({ authenticated: true, role: req.session.user.role });
+    } else {
+        res.json({ authenticated: false });
+    }
+});
+
 // Create orders directory if it doesn't exist
 const ordersDir = path.join(__dirname, 'orders');
 if (!fs.existsSync(ordersDir)) {
