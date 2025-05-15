@@ -15,6 +15,13 @@ const crypto = require('crypto');
 const { sequelize, testConnection } = require('./backend/src/config/database');
 const Menu = require('./backend/src/models/Menu');
 
+// Allpay configuration
+const ALLPAY_CONFIG = {
+    apiLogin: 'pp1009681',
+    apiKey: 'B139E36C2D7BC6D0AE615360588D929A',
+    apiUrl: 'https://allpay.to/app/?show=getpayment&mode=api8'
+};
+
 // Define data directory paths
 const DATA_DIR = process.env.NODE_ENV === 'production' ? '/data' : __dirname;
 const ORDERS_DIR = path.join(DATA_DIR, 'orders');
