@@ -7,6 +7,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +16,7 @@ import { checkoutService, DeliveryAddress, PaymentMethod } from '../services/che
 import { cartService } from '../services/cart';
 import { COLORS, FONTS, SIZES, SPACING } from '../constants/theme';
 import Button from '../components/Button';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type CheckoutScreenNavigationProp = NativeStackNavigationProp<RestaurantStackParamList, 'Checkout'>;
 
@@ -117,6 +119,97 @@ const CheckoutScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.content}>
+        {/* Payment Method Section - Now at the top */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <View style={styles.paymentTypeSelector}>
+            <TouchableOpacity
+              style={[
+                styles.paymentTypeCard,
+                paymentMethod.type === 'card' && styles.selectedPaymentCard,
+              ]}
+              onPress={() => setPaymentMethod({ type: 'card' })}
+            >
+              <Icon 
+                name="credit-card" 
+                size={24} 
+                color={paymentMethod.type === 'card' ? COLORS.white : COLORS.primary} 
+              />
+              <Text style={[
+                styles.paymentTypeText,
+                paymentMethod.type === 'card' && styles.selectedPaymentText
+              ]}>
+                Credit Card
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.paymentTypeCard,
+                paymentMethod.type === 'cash' && styles.selectedPaymentCard,
+              ]}
+              onPress={() => setPaymentMethod({ type: 'cash' })}
+            >
+              <Icon 
+                name="cash" 
+                size={24} 
+                color={paymentMethod.type === 'cash' ? COLORS.white : COLORS.primary} 
+              />
+              <Text style={[
+                styles.paymentTypeText,
+                paymentMethod.type === 'cash' && styles.selectedPaymentText
+              ]}>
+                Cash on Delivery
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {paymentMethod.type === 'card' && (
+            <View style={styles.cardDetailsContainer}>
+              <View style={styles.cardInputContainer}>
+                <Icon name="credit-card-outline" size={20} color={COLORS.gray} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, styles.cardInput]}
+                  placeholder="Card Number"
+                  value={paymentMethod.cardDetails?.number}
+                  onChangeText={(value) => handlePaymentMethodChange('number', value)}
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.row}>
+                <View style={[styles.cardInputContainer, styles.halfInput]}>
+                  <Icon name="calendar" size={20} color={COLORS.gray} style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, styles.cardInput]}
+                    placeholder="MM/YY"
+                    value={paymentMethod.cardDetails?.expiryDate}
+                    onChangeText={(value) => handlePaymentMethodChange('expiryDate', value)}
+                  />
+                </View>
+                <View style={[styles.cardInputContainer, styles.halfInput]}>
+                  <Icon name="lock" size={20} color={COLORS.gray} style={styles.inputIcon} />
+                  <TextInput
+                    style={[styles.input, styles.cardInput]}
+                    placeholder="CVV"
+                    value={paymentMethod.cardDetails?.cvv}
+                    onChangeText={(value) => handlePaymentMethodChange('cvv', value)}
+                    keyboardType="numeric"
+                    secureTextEntry
+                  />
+                </View>
+              </View>
+              <View style={styles.cardInputContainer}>
+                <Icon name="account" size={20} color={COLORS.gray} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, styles.cardInput]}
+                  placeholder="Name on Card"
+                  value={paymentMethod.cardDetails?.name}
+                  onChangeText={(value) => handlePaymentMethodChange('name', value)}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+
         {/* Delivery Type Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Delivery Type</Text>
@@ -185,67 +278,6 @@ const CheckoutScreen = () => {
             />
           </View>
         )}
-
-        {/* Payment Method Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={styles.paymentTypeSelector}>
-            <Button
-              title="Credit Card"
-              icon="credit-card"
-              onPress={() => setPaymentMethod({ type: 'card' })}
-              style={[
-                styles.paymentTypeButton,
-                paymentMethod.type === 'card' && styles.selectedPaymentType,
-              ]}
-              textStyle={paymentMethod.type === 'card' ? styles.selectedPaymentTypeText : undefined}
-            />
-            <Button
-              title="Cash on Delivery"
-              icon="cash"
-              onPress={() => setPaymentMethod({ type: 'cash' })}
-              style={[
-                styles.paymentTypeButton,
-                paymentMethod.type === 'cash' && styles.selectedPaymentType,
-              ]}
-              textStyle={paymentMethod.type === 'cash' ? styles.selectedPaymentTypeText : undefined}
-            />
-          </View>
-
-          {paymentMethod.type === 'card' && (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder="Card Number"
-                value={paymentMethod.cardDetails?.number}
-                onChangeText={(value) => handlePaymentMethodChange('number', value)}
-                keyboardType="numeric"
-              />
-              <View style={styles.row}>
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="MM/YY"
-                  value={paymentMethod.cardDetails?.expiryDate}
-                  onChangeText={(value) => handlePaymentMethodChange('expiryDate', value)}
-                />
-                <TextInput
-                  style={[styles.input, styles.halfInput]}
-                  placeholder="CVV"
-                  value={paymentMethod.cardDetails?.cvv}
-                  onChangeText={(value) => handlePaymentMethodChange('cvv', value)}
-                  keyboardType="numeric"
-                  secureTextEntry
-                />
-              </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Name on Card"
-                value={paymentMethod.cardDetails?.name}
-                onChangeText={(value) => handlePaymentMethodChange('name', value)}
-              />
-            </>
-          )}
-        </View>
 
         {/* Customer Information Section */}
         <View style={styles.section}>
@@ -379,17 +411,65 @@ const styles = StyleSheet.create({
   paymentTypeSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: SPACING.m,
+    marginBottom: SPACING.lg,
   },
-  paymentTypeButton: {
-    width: '48%',
-    backgroundColor: COLORS.lightGrey,
+  paymentTypeCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: SPACING.lg,
+    marginHorizontal: SPACING.xs,
+    borderRadius: SIZES.radius,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.lightGray,
+    elevation: 2,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  selectedPaymentType: {
+  selectedPaymentCard: {
     backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
-  selectedPaymentTypeText: {
+  paymentTypeText: {
+    marginLeft: SPACING.sm,
+    fontSize: SIZES.body3,
+    fontFamily: FONTS.medium,
+    color: COLORS.text,
+  },
+  selectedPaymentText: {
     color: COLORS.white,
+  },
+  cardDetailsContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: SIZES.radius,
+    padding: SPACING.lg,
+    marginTop: SPACING.md,
+    elevation: 2,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+    backgroundColor: COLORS.lightGray,
+    borderRadius: SIZES.radius,
+    paddingHorizontal: SPACING.sm,
+  },
+  inputIcon: {
+    marginRight: SPACING.sm,
+  },
+  cardInput: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    paddingLeft: 0,
   },
   summaryRow: {
     flexDirection: 'row',

@@ -23,4 +23,8 @@ services:
       - key: API_BASE_URL
         value: https://vanillo.onrender.com
     healthCheckPath: /
-    autoDeploy: true 
+    autoDeploy: true
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1 
